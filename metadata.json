@@ -1,0 +1,6 @@
+{
+  "name": "by irmuun",
+  "description": "An interactive, full-screen geology hero section featuring a cursor-following spotlight that reveals a secondary layered lithosphere layer.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
