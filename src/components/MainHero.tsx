@@ -9,6 +9,8 @@ import { ArrowRight, Compass, Layers, Milestone, ShieldAlert, Sparkles, X } from
 import { Navbar } from './Navbar';
 import { RevealLayer } from './RevealLayer';
 import { AmbientPlayer } from './AmbientPlayer';
+import { IdolModal } from './IdolModal';
+import { MessengerPopup } from './MessengerPopup';
 
 const BG_IMAGE_1 =
   'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_195923_b0ba8ace-1d1d-4f2c-9a28-1ab84b330680.png&w=1280&q=85';
@@ -27,6 +29,7 @@ export function MainHero() {
   const [isSignUpOpen, setIsSignUpOpen] = useState(false);
   const [isDiggingOpen, setIsDiggingOpen] = useState(false);
   const [selectedLayer, setSelectedLayer] = useState<string>('crust');
+  const [isIdolOpen, setIsIdolOpen] = useState(false);
 
   // Tracking mouse with smoothing (Lerp)
   useEffect(() => {
@@ -89,6 +92,8 @@ export function MainHero() {
           // When users click navigation options, provide quick contextual feedback or trigger actions!
           if (tabId === 'Geology') {
             setIsDiggingOpen(true);
+          } else if (tabId === 'Idol') {
+            setIsIdolOpen(true);
           }
         }}
       />
@@ -523,6 +528,9 @@ export function MainHero() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <IdolModal isOpen={isIdolOpen} onClose={() => setIsIdolOpen(false)} />
+      <MessengerPopup />
     </div>
   );
 }

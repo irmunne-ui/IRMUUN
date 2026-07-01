@@ -22,9 +22,16 @@ export function Navbar({ onSignUpClick, onTabChange }: NavbarProps) {
     { id: 'Geology', label: 'Geology' },
     { id: 'Plans', label: 'Plans' },
     { id: 'Tour', label: 'Live Tour' },
+    { id: 'Idol', label: '🤖 My Idol' },
   ];
 
   const handleTabClick = (tabId: string) => {
+    if (tabId === 'Idol') {
+      if (onTabChange) {
+        onTabChange(tabId);
+      }
+      return;
+    }
     setActiveTab(tabId);
     if (onTabChange) {
       onTabChange(tabId);
