@@ -11,6 +11,7 @@ import { RevealLayer } from './RevealLayer';
 import { AmbientPlayer } from './AmbientPlayer';
 import { IdolModal } from './IdolModal';
 import { MessengerPopup } from './MessengerPopup';
+import { AnimeGuesser } from './AnimeGuesser';
 
 const BG_IMAGE_1 =
   'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_195923_b0ba8ace-1d1d-4f2c-9a28-1ab84b330680.png&w=1280&q=85';
@@ -30,6 +31,7 @@ export function MainHero() {
   const [isDiggingOpen, setIsDiggingOpen] = useState(false);
   const [selectedLayer, setSelectedLayer] = useState<string>('crust');
   const [isIdolOpen, setIsIdolOpen] = useState(false);
+  const [isGameOpen, setIsGameOpen] = useState(false);
 
   // Tracking mouse with smoothing (Lerp)
   useEffect(() => {
@@ -94,6 +96,8 @@ export function MainHero() {
             setIsDiggingOpen(true);
           } else if (tabId === 'Idol') {
             setIsIdolOpen(true);
+          } else if (tabId === 'Game') {
+            setIsGameOpen(true);
           }
         }}
       />
@@ -530,6 +534,7 @@ export function MainHero() {
       </AnimatePresence>
 
       <IdolModal isOpen={isIdolOpen} onClose={() => setIsIdolOpen(false)} />
+      <AnimeGuesser isOpen={isGameOpen} onClose={() => setIsGameOpen(false)} />
       <MessengerPopup />
     </div>
   );

@@ -23,10 +23,11 @@ export function Navbar({ onSignUpClick, onTabChange }: NavbarProps) {
     { id: 'Plans', label: 'Plans' },
     { id: 'Tour', label: 'Live Tour' },
     { id: 'Idol', label: '🤖 My Idol' },
+    { id: 'Game', label: '🎮 Anime Guesser' },
   ];
 
   const handleTabClick = (tabId: string) => {
-    if (tabId === 'Idol') {
+    if (tabId === 'Idol' || tabId === 'Game') {
       if (onTabChange) {
         onTabChange(tabId);
       }
