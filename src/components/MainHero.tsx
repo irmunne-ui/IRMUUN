@@ -12,6 +12,7 @@ import { AmbientPlayer } from './AmbientPlayer';
 import { IdolModal } from './IdolModal';
 import { MessengerPopup } from './MessengerPopup';
 import { AnimeGuesser } from './AnimeGuesser';
+import { Typashi } from './Typashi';
 
 const BG_IMAGE_1 =
   'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_195923_b0ba8ace-1d1d-4f2c-9a28-1ab84b330680.png&w=1280&q=85';
@@ -32,6 +33,7 @@ export function MainHero() {
   const [selectedLayer, setSelectedLayer] = useState<string>('crust');
   const [isIdolOpen, setIsIdolOpen] = useState(false);
   const [isGameOpen, setIsGameOpen] = useState(false);
+  const [isTypashiOpen, setIsTypashiOpen] = useState(false);
 
   // Tracking mouse with smoothing (Lerp)
   useEffect(() => {
@@ -81,6 +83,26 @@ export function MainHero() {
     };
   }, []);
 
+  const [windowSize, setWindowSize] = useState({ width: 1200, height: 800 });
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+      const handleResize = () => {
+        setWindowSize({ width: window.innerWidth, height: window.innerHeight });
+      };
+      window.addEventListener('resize', handleResize);
+      return () => window.removeEventListener('resize', handleResize);
+    }
+  }, []);
+
+  const isCursorActive = cursorPos.x !== -999 && cursorPos.y !== -999;
+  const parallaxX1 = isCursorActive ? (cursorPos.x / windowSize.width - 0.5) * -15 : 0;
+  const parallaxY1 = isCursorActive ? (cursorPos.y / windowSize.height - 0.5) * -15 : 0;
+
+  const parallaxX2 = isCursorActive ? (cursorPos.x / windowSize.width - 0.5) * -35 : 0;
+  const parallaxY2 = isCursorActive ? (cursorPos.y / windowSize.height - 0.5) * -35 : 0;
+
   return (
     <div
       className="min-h-screen bg-white tracking-[-0.02em] select-none text-white overflow-x-hidden"
@@ -98,6 +120,8 @@ export function MainHero() {
             setIsIdolOpen(true);
           } else if (tabId === 'Game') {
             setIsGameOpen(true);
+          } else if (tabId === 'Typashi') {
+            setIsTypashiOpen(true);
           }
         }}
       />
@@ -111,12 +135,19 @@ export function MainHero() {
         className="relative w-full overflow-hidden h-screen bg-black"
         style={{ height: '100dvh' }}
       >
-        {/* Base Layer: Zooming Image */}
+        {/* Base Layer: Wrapper with Parallax Translation */}
         <div
-          id="hero-base-image"
-          className="absolute inset-0 bg-center bg-cover bg-no-repeat z-10 hero-zoom pointer-events-none"
-          style={{ backgroundImage: `url(${BG_IMAGE_1})` }}
-        />
+          className="absolute inset-0 z-10 overflow-hidden pointer-events-none"
+          style={{
+            transform: `translate(${parallaxX1}px, ${parallaxY1}px) scale(1.05)`,
+          }}
+        >
+          <div
+            id="hero-base-image"
+            className="absolute inset-0 bg-center bg-cover bg-no-repeat hero-zoom"
+            style={{ backgroundImage: `url(${BG_IMAGE_1})` }}
+          />
+        </div>
 
         {/* Transition Overlay (adds a gorgeous vignette & depth over base layer) */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/50 z-20 pointer-events-none" />
@@ -127,6 +158,8 @@ export function MainHero() {
           cursorX={cursorPos.x}
           cursorY={cursorPos.y}
           spotlightRadius={SPOTLIGHT_R}
+          parallaxX={parallaxX2}
+          parallaxY={parallaxY2}
         />
 
         {/* Outer vignette to restrict the mask glow boundaries neatly */}
@@ -535,6 +568,7 @@ export function MainHero() {
 
       <IdolModal isOpen={isIdolOpen} onClose={() => setIsIdolOpen(false)} />
       <AnimeGuesser isOpen={isGameOpen} onClose={() => setIsGameOpen(false)} />
+      <Typashi isOpen={isTypashiOpen} onClose={() => setIsTypashiOpen(false)} />
       <MessengerPopup />
     </div>
   );

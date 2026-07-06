@@ -1,0 +1,591 @@
+{
+  "trivia": [
+    {
+      "id": 1,
+      "question": {
+        "mn": "Луффигийн хамгийн анхны багийн гишүүн хэн бэ?",
+        "en": "Who was Luffy's very first crew member?",
+        "ja": "ルフィの最初の仲間は誰ですか？"
+      },
+      "options": {
+        "mn": ["Ророноа Зоро", "Нами", "Усопп", "Санжи"],
+        "en": ["Roronoa Zoro", "Nami", "Usopp", "Sanji"],
+        "ja": ["ロロノア・ゾロ", "ナミ", "ウソップ", "サンジ"]
+      },
+      "answerIndex": 0,
+      "hint": {
+        "mn": "Нэгэн цагт Тэнүүчлэн ангууч гэгддэг байсан сэлэмтэн.",
+        "en": "A swordsman once known as the Pirate Hunter.",
+        "ja": "かつて海賊狩りとして知られた剣士。"
+      }
+    },
+    {
+      "id": 2,
+      "question": {
+        "mn": "Death Note аниме дээрх үхлийн бурхан Рюүк ямар жимсэнд дуртай вэ?",
+        "en": "What is Ryuk the Shinigami's favorite fruit in Death Note?",
+        "ja": "『DEATH NOTE』の死神リュークの大好物は何ですか？"
+      },
+      "options": {
+        "mn": ["Банана", "Гүзээлзгэнэ", "Алим", "Усан үзэм"],
+        "en": ["Banana", "Strawberry", "Apple", "Grape"],
+        "ja": ["バナナ", "イチゴ", "リンゴ", "ブドウ"]
+      },
+      "answerIndex": 2,
+      "hint": {
+        "mn": "Улаан бөгөөд шүүслэг, дэлхийнх илүү амттай гэдэг.",
+        "en": "Red, juicy, and he says the ones on Earth are much sweeter.",
+        "ja": "赤くてジューシーで、人間界のものが最高だと言っています。"
+      }
+    },
+    {
+      "id": 3,
+      "question": {
+        "mn": "Нарутогийн хамгийн анхны багш хэн бэ?",
+        "en": "Who was Naruto's very first teacher/academy instructor?",
+        "ja": "ナルトの最初の（アカデミーの）先生は誰ですか？"
+      },
+      "options": {
+        "mn": ["Какаши", "Жирайя", "Ирүка", "Сарутоби"],
+        "en": ["Kakashi", "Jiraiya", "Iruka", "Sarutobi"],
+        "ja": ["カカシ", "自来也", "イルカ", "猿飛"]
+      },
+      "answerIndex": 2,
+      "hint": {
+        "mn": "Духан дээрээ хэвтээ сорвитой, Нарутог бага байхад нь ганцаараа ойлгож хайрласан багш.",
+        "en": "An instructor with a scar across his face who bought Naruto ramen.",
+        "ja": "顔に横一文字の傷があり、ナルトにラーメンをご馳走してくれた先生。"
+      }
+    },
+    {
+      "id": 4,
+      "question": {
+        "mn": "Demon Slayer анимений гол дүрийн хүүгийн нэр хэн бэ?",
+        "en": "Who is the main protagonist of Demon Slayer?",
+        "ja": "『鬼滅の刃』の主人公の名前は誰ですか？"
+      },
+      "options": {
+        "mn": ["Зэницу", "Танжиро", "Иносүкэ", "Гиюү"],
+        "en": ["Zenitsu", "Tanjiro", "Inosuke", "Giyu"],
+        "ja": ["善逸", "炭治郎", "伊之助", "義勇"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Дүү Нэзүкогоо буцааж хүн болгохоор чөтгөрүүдтэй тэмцдэг.",
+        "en": "He fights demons to turn his sister Nezuko back into a human.",
+        "ja": "妹の禰󠄀豆子を人間に戻すために鬼と戦う少年。"
+      }
+    },
+    {
+      "id": 5,
+      "question": {
+        "mn": "Хаяо Миязакигийн хамгийн алдартай, Оскарын шагнал хүртсэн бүтээл аль нь вэ?",
+        "en": "Which of Hayao Miyazaki's masterpieces won an Academy Award?",
+        "ja": "宮崎駿監督の作品で、アカデミー賞を受賞したのはどれですか？"
+      },
+      "options": {
+        "mn": ["Миний хөрш Тоторо", "Хаулын нүүдэг цайз", "Сүнсээр туугдагсад", "Мононоке гүнж"],
+        "en": ["My Neighbor Totoro", "Howl's Moving Castle", "Spirited Away", "Princess Mononoke"],
+        "ja": ["となりのトトロ", "ハウルの動く城", "千と千尋の神隠し", "もののけ姫"]
+      },
+      "answerIndex": 2,
+      "hint": {
+        "mn": "Тихиро охины хачин жигтэй халуун усны газарт өнгөрүүлсэн түүх.",
+        "en": "The story of Chihiro in a mysterious bathhouse for spirits.",
+        "ja": "神々の集う不思議な湯屋に迷い込んだ千尋の物語。"
+      }
+    },
+    {
+      "id": 6,
+      "question": {
+        "mn": "Jujutsu Kaisen-ий хамгийн хүчирхэг шидтэн хэн бэ?",
+        "en": "Who is known as the strongest sorcerer in Jujutsu Kaisen?",
+        "ja": "『呪術廻戦』で現代最強の呪術師と呼ばれるのは誰ですか？"
+      },
+      "options": {
+        "mn": ["Итадори Юүжи", "Фүшигүро Мэгүми", "Гожо Сатору", "Нанами Кэнто"],
+        "en": ["Yuji Itadori", "Megumi Fushiguro", "Gojo Satoru", "Kento Nanami"],
+        "ja": ["虎杖悠仁", "伏黒恵", "五条悟", "七海建人"]
+      },
+      "answerIndex": 2,
+      "hint": {
+        "mn": "Нүдний боолттой, Хязгааргүй хоосон орон зайн эзэн.",
+        "en": "He wears a blindfold and controls the Limitless dynamic.",
+        "ja": "目隠しを着用しており、無下限呪術を操る男。"
+      }
+    },
+    {
+      "id": 7,
+      "question": {
+        "mn": "One Punch Man-ий Саитама яагаад үсээ алдаж халзан болсон бэ?",
+        "en": "Why did Saitama lose his hair and go bald in One Punch Man?",
+        "ja": "『ワンパンマン』のサイタマはなぜハゲてしまったのですか？"
+      },
+      "options": {
+        "mn": ["Бурхны хараалаас болж", "Шаргуу, хүнд дасгал сургуулилтаас болж", "Дайсны тусгай туяанаас болж", "Удамшлын халзралт"],
+        "en": ["Because of a god's curse", "Due to intense, heavy daily physical training", "An enemy's toxic beam hit him", "Natural genetic baldness"],
+        "ja": ["神の呪いのため", "過酷なトレーニングを毎日続けたため", "敵のビームを浴びたため", "遺伝的な若ハゲ"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Өдөр бүр 100 суниалт, 100 squats, 10км гүйлт хийдэг байсан.",
+        "en": "He did 100 push-ups, 100 sit-ups, 100 squats, and a 10km run every day.",
+        "ja": "腕立て100回、腹筋100回、スクワット100回、ランニング10kmを毎日行いました。"
+      }
+    },
+    {
+      "id": 8,
+      "question": {
+        "mn": "Attack on Titan анимед хүн төрөлхтнийг хамгаалдаг хамгийн гаднах ханыг юу гэж нэрлэдэг вэ?",
+        "en": "What is the name of the outermost wall protecting humanity in Attack on Titan?",
+        "ja": "『進撃の巨人』で人類を守る一番外側の壁の名前は何ですか？"
+      },
+      "options": {
+        "mn": ["Мариа хана", "Роуз хана", "Сина хана", "Титаны хана"],
+        "en": ["Wall Maria", "Wall Rose", "Wall Sina", "Wall Titan"],
+        "ja": ["ウォール・マリア", "ウォール・ローゼ", "ウォール・シーナ", "ウォール・タイタン"]
+      },
+      "answerIndex": 0,
+      "hint": {
+        "mn": "Эхний ангид Колоссал титаны дайралтаар нурдаг хана.",
+        "en": "The wall breached by the Colossal Titan in the very first episode.",
+        "ja": "第1話で超大型巨人の襲撃により突破された壁。"
+      }
+    },
+    {
+      "id": 9,
+      "question": {
+        "mn": "Dragon Ball анимед Сон Гокугийн төрөлх Саиян гаригийн нэр юу вэ?",
+        "en": "What is the name of Son Goku's home planet of birth in Dragon Ball?",
+        "ja": "『ドラゴンボール』で孫悟空が生まれたサイヤ人の故郷の惑星は何ですか？"
+      },
+      "options": {
+        "mn": ["Намэк гариг", "Вегета гариг", "Фрийза гариг", "Дэлхий"],
+        "en": ["Planet Namek", "Planet Vegeta", "Planet Freet", "Earth"],
+        "ja": ["ナメック星", "惑星ベジータ", "惑星フリーザ", "地球"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Түүний өрсөлдөгч хунтайжтай ижил нэртэй гариг.",
+        "en": "It shares its name with his eternal rival, the prince.",
+        "ja": "彼の永遠のライバルである王子の名前と同じ惑星です。"
+      }
+    },
+    {
+      "id": 10,
+      "question": {
+        "mn": "Hunter x Hunter анимений гол дүр Гон-ын хамгийн сайн найзыг хэн гэдэг вэ?",
+        "en": "Who is Gon Freecss's best friend in Hunter x Hunter?",
+        "ja": "『HUNTER×HUNTER』の主人公ゴンの親友は誰ですか？"
+      },
+      "options": {
+        "mn": ["Курапика", "Леорио", "Киллуа", "Хисока"],
+        "en": ["Kurapika", "Leorio", "Killua", "Hisoka"],
+        "ja": ["クラピカ", "レオリオ", "キルア", "ヒソカ"]
+      },
+      "answerIndex": 2,
+      "hint": {
+        "mn": "Золдик алуурчны гэр бүлээс гаралтай, цахилгаан ашигладаг хүү.",
+        "en": "A boy from the Zoldyck family of assassins who uses lightning attacks.",
+        "ja": "暗殺一家ゾルディック家出身で、雷のオーラを操る少年。"
+      }
+    },
+    {
+      "id": 11,
+      "question": {
+        "mn": "Fullmetal Alchemist-д Элрик ах дүүсийн хайж буй зүйл юу вэ?",
+        "en": "What legendary item are the Elric brothers searching for in Fullmetal Alchemist?",
+        "ja": "『鋼の錬金術師』でエルリック兄弟が探している伝説のアイテムは何ですか？"
+      },
+      "options": {
+        "mn": ["Мөнхийн ус", "Гүн ухаантны чулуу", "Алхимийн титэм", "Амьдралын тойрог"],
+        "en": ["Elixir of Life", "Philosopher's Stone", "Alchemic Crown", "Circle of Life"],
+        "ja": ["不老不死の霊薬", "賢者の石", "錬金術の王冠", "生命の錬成陣"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Тэнгэрийн ухаан, тэнцүү солилцооны дүрмийг зөрчих хүчтэй чулуу.",
+        "en": "An artifact that bypasses the law of Equivalent Exchange.",
+        "ja": "「等価交換」の原則を無視することができる強力な石。"
+      }
+    },
+    {
+      "id": 12,
+      "question": {
+        "mn": "My Hero Academia аниме дээр Дэкү-ийн хүлээн авсан хүчийг юу гэж нэрлэдэг вэ?",
+        "en": "What is the name of Deku's inherited Quirk in My Hero Academia?",
+        "ja": "『僕のヒーローアカデミア』でデクが受け継いだ個性の名前は何ですか？"
+      },
+      "options": {
+        "mn": ["All for One", "One for All", "Explosion", "Half-Cold Half-Hot"],
+        "en": ["All for One", "One for All", "Explosion", "Half-Cold Half-Hot"],
+        "ja": ["オール・フォー・ワン", "ワン・フォー・オール", "爆破", "半冷半燃"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Үеэс үед уламжлагдан дамжиж ирсэн, Бүхний тусын тулд нэгэн хүч.",
+        "en": "A sacred power passed down through generations.",
+        "ja": "代々受け継がれてきた聖なる力。"
+      }
+    },
+    {
+      "id": 13,
+      "question": {
+        "mn": "Tokyo Ghoul-ийн Кэн Канэки хүнээс өөр ямар зүйлийг амталж хэрэглэж чаддаг вэ?",
+        "en": "In Tokyo Ghoul, what is the only normal thing Kaneki can still consume?",
+        "ja": "『東京喰種』で半喰種となったカネキが、唯一美味しく口にできる人間の食べ物は何ですか？"
+      },
+      "options": {
+        "mn": ["Ногоон цай", "Сүү", "Кофе", "Талх"],
+        "en": ["Green Tea", "Milk", "Coffee", "Bread"],
+        "ja": ["緑茶", "牛乳", "コーヒー", "パン"]
+      },
+      "answerIndex": 2,
+      "hint": {
+        "mn": "Антеику кафе түүнд үүнийг бэлтгэж өгдөг байсан.",
+        "en": "Anteiku Cafe serves this to help ghouls blend in with humans.",
+        "ja": "あんていくの喫茶店で提供される温かい飲み物。"
+      }
+    },
+    {
+      "id": 14,
+      "question": {
+        "mn": "Neon Genesis Evangelion анимед Шинжи Икари-гийн жолооддог аварга роботыг юу гэдэг вэ?",
+        "en": "Which giant mecha unit does Shinji Ikari pilot in Evangelion?",
+        "ja": "『新世紀エヴァンゲリオン』で碇シンジが搭乗する機体は何ですか？"
+      },
+      "options": {
+        "mn": ["Ева-00", "Ева-01", "Ева-02", "Гандам-01"],
+        "en": ["Eva Unit-00", "Eva Unit-01", "Eva Unit-02", "Gundam RX-78"],
+        "ja": ["エヴァ零号機", "エヴァ初号機", "エヴァ2号機", "ガンダムRX-78"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Нил ягаан, ногоон өнгөтэй, Шинжигийн ээжийн сүнстэй холбоотой биет.",
+        "en": "The iconic purple and neon green flagship Evangelion unit.",
+        "ja": "紫と黄緑のデザインが特徴的な、エヴァンゲリオンの代表的機体。"
+      }
+    },
+    {
+      "id": 15,
+      "question": {
+        "mn": "Bleach анимед Ичиго Күросакигийн үндсэн сэлэмний дайралтыг юу гэж нэрлэдэг вэ?",
+        "en": "What is the name of Ichigo Kurosaki's signature energy slash in Bleach?",
+        "ja": "『BLEACH』で黒崎一護が放つ代表的な斬撃の技名は何ですか？"
+      },
+      "options": {
+        "mn": ["Расэнган", "Гэцүга Тэншо", "Чидори", "Банкай Сан"],
+        "en": ["Rasengan", "Getsuga Tensho", "Chidori", "Bankai Slash"],
+        "ja": ["螺旋丸", "月牙天衝", "千鳥", "卍解スラッシュ"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Сэлэмнээс хар, эсвэл хөх өнгийн энергийн хавирган саран ир гаргадаг.",
+        "en": "It means 'Moon Fang Heaven-Piercer'.",
+        "ja": "「天を衝く月牙の牙」という意味の、強烈な霊圧の斬撃。"
+      }
+    }
+  ],
+  "heroes": [
+    {
+      "id": 101,
+      "question": {
+        "mn": "Зурган дээрх далайн дээрэмчин, резинэн биетэй баатрыг хэн гэдэг вэ?",
+        "en": "Who is this pirate captain with a rubber body?",
+        "ja": "このゴムの体を持つ海賊の船長は誰ですか？"
+      },
+      "image": "/src/assets/images/luffy_avatar_1783049693631.jpg",
+      "options": {
+        "mn": ["Монки Д. Луффи", "Ророноа Зоро", "Портгас Д. Эйс", "Шанкс"],
+        "en": ["Monkey D. Luffy", "Roronoa Zoro", "Portgas D. Ace", "Shanks"],
+        "ja": ["モンキー・D・ルフィ", "ロロノア・ゾロ", "ポートガス・D・エース", "シャンクス"]
+      },
+      "answerIndex": 0,
+      "hint": {
+        "mn": "Далайн дээрэмчдийн хаан болох зорилготой, Straw Hat багийн ахлагч.",
+        "en": "Captain of the Straw Hat Pirates, aims to be the Pirate King.",
+        "ja": "麦わらの一味の船長。海賊王を目指す少年。"
+      }
+    },
+    {
+      "id": 102,
+      "question": {
+        "mn": "Зурган дээрх Навчны тосгоны Хокагэ болох зорилготой шинобиг хэн гэдэг вэ?",
+        "en": "Who is this Leaf Village shinobi who aims to become Hokage?",
+        "ja": "木ノ葉隠れの里の忍で、火影を目指すこの少年は誰ですか？"
+      },
+      "image": "/src/assets/images/naruto_avatar_1783049703827.jpg",
+      "options": {
+        "mn": ["Учиха Сасүкэ", "Үзүмаки Наруто", "Хатакэ Какаши", "Намиказэ Минато"],
+        "en": ["Sasuke Uchiha", "Uzumaki Naruto", "Kakashi Hatake", "Minato Namikaze"],
+        "ja": ["うちはサスケ", "うずまきナルト", "はたけカカシ", "波風ミナト"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Биедээ есөн сүүлт үнэг (Кюүби)-ийг битүүмжилсэн хүү.",
+        "en": "The host of the Nine-Tailed Fox (Kurama) inside him.",
+        "ja": "体内に九尾の妖狐（九喇嘛）を宿す少年。"
+      }
+    },
+    {
+      "id": 103,
+      "question": {
+        "mn": "Зурган дээрх дүүгээ аврахаар чөтгөрүүдтэй тэмцэж буй чин сэтгэлт хүүг хэн гэдэг вэ?",
+        "en": "Who is this determined boy fighting demons to save his sister?",
+        "ja": "妹を救うために鬼と戦う、この心優しい少年は誰ですか？"
+      },
+      "image": "/src/assets/images/tanjiro_avatar_1783049713968.jpg",
+      "options": {
+        "mn": ["Агацума Зэницу", "Хашибира Иносүкэ", "Камадо Танжиро", "Томиока Гиюү"],
+        "en": ["Zenitsu Agatsuma", "Inosuke Hashibira", "Kamado Tanjiro", "Giyu Tomioka"],
+        "ja": ["我妻善逸", "嘴平伊之助", "竈門炭治郎", "冨岡義勇"]
+      },
+      "answerIndex": 2,
+      "hint": {
+        "mn": "Demon Slayer Corps-ийн гишүүн, усан болон нарны амьсгалын эзэн.",
+        "en": "A Demon Slayer who wields Water and Sun Breathing styles.",
+        "ja": "水の呼吸とヒノカミ神楽（日の呼吸）を操る鬼殺隊士。"
+      }
+    },
+    {
+      "id": 104,
+      "question": {
+        "mn": "Зурган дээрх дэлхийг олон удаа аварсан домогт Саиян дайчныг хэн гэдэг вэ?",
+        "en": "Who is this legendary Saiyan warrior who has saved Earth many times?",
+        "ja": "地球を何度も救った、この伝説のサイヤ人戦士は誰ですか？"
+      },
+      "image": "/src/assets/images/goku_avatar_1783049727320.jpg",
+      "options": {
+        "mn": ["Вегета", "Сон Гоку", "Сон Гохан", "Пикколо"],
+        "en": ["Vegeta", "Son Goku", "Son Gohan", "Piccolo"],
+        "ja": ["ベジータ", "孫悟空", "孫悟飯", "ピッコロ"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Түүнийг мөн Саиян нэрээр нь Какарот гэж дууддаг.",
+        "en": "He is also known by his Saiyan name, Kakarot.",
+        "ja": "サイヤ人としての本名はカカロットです。"
+      }
+    },
+    {
+      "id": 105,
+      "question": {
+        "mn": "Зурган дээрх нүдээ боосон, Хязгааргүй динамиктай хүчирхэг багшийг хэн гэдэг вэ?",
+        "en": "Who is this powerful blindfolded teacher with beautiful blue eyes?",
+        "ja": "目隠しの下に美しい碧眼を隠した、この最強の呪術師は誰ですか？"
+      },
+      "image": "/src/assets/images/gojo_avatar_1783296328733.jpg",
+      "options": {
+        "mn": ["Нанами Кэнто", "Гожо Сатору", "Гето Сүгүрү", "Итадори Юүжи"],
+        "en": ["Kento Nanami", "Gojo Satoru", "Suguru Geto", "Yuji Itadori"],
+        "ja": ["七海建人", "五条悟", "夏油傑", "虎杖悠仁"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Тэр бол Jujutsu High-ийн тусгай зэрэглэлийн багш юм.",
+        "en": "Special grade sorcerer instructor at Tokyo Jujutsu High.",
+        "ja": "都立呪術高専の特級呪術師にして教師。"
+      }
+    },
+    {
+      "id": 106,
+      "question": {
+        "mn": "Зурган дээрх ганцхан цохилтоор ямар ч дайсныг ялдаг баатрыг хэн гэдэг вэ?",
+        "en": "Who is this hero who defeats any enemy with a single punch?",
+        "ja": "どんな敵でも一撃（ワンパン）で倒してしまう、このヒーローは誰ですか？"
+      },
+      "image": "/src/assets/images/saitama_avatar_1783296340591.jpg",
+      "options": {
+        "mn": ["Саитама", "Генос", "Гароу", "Соник"],
+        "en": ["Saitama", "Genos", "Garou", "Sonic"],
+        "ja": ["サイタマ", "ジェノス", "ガロウ", "音速のソニック"]
+      },
+      "answerIndex": 0,
+      "hint": {
+        "mn": "Халзан толгойтой бөгөөд зүгээр л хоббигоороо баатар хийдэг.",
+        "en": "Bald-headed guy who is just a hero for fun.",
+        "ja": "趣味でヒーローをやっているスキンヘッドの男。"
+      }
+    },
+    {
+      "id": 107,
+      "question": {
+        "mn": "Зурган дээрх цахилгааны хүчтэй, Гон-ын сайн найз алуурчин хүүг хэн гэдэг вэ?",
+        "en": "Who is this lightning-wielding assassin boy and Gon's best friend?",
+        "ja": "雷属性のオーラを放つ、ゴンの親友であるこの暗殺者の少年は誰ですか？"
+      },
+      "image": "/src/assets/images/killua_avatar_1783296352202.jpg",
+      "options": {
+        "mn": ["Курапика", "Киллуа Золдик", "Иллуми", "Хисока"],
+        "en": ["Kurapika", "Killua Zoldyck", "Illumi", "Hisoka"],
+        "ja": ["クラピカ", "キルア＝ゾルディック", "イルミ", "ヒソカ"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Золдикийн гэр бүлийн уламжлалт залгамжлагч.",
+        "en": "The silver-haired heir of the infamous Zoldyck family.",
+        "ja": "悪名高き暗殺一家ゾルディック家の銀髪の跡取り息子。"
+      }
+    },
+    {
+      "id": 108,
+      "question": {
+        "mn": "Зурган дээрх хүн төрөлхтний хамгийн хүчирхэг дайчин гэгддэг ахлахыг хэн гэдэг вэ?",
+        "en": "Who is this humanity's strongest soldier squad leader?",
+        "ja": "「人類最強の兵士」と称される、調査兵団のこの兵長は誰ですか？"
+      },
+      "image": "/src/assets/images/levi_avatar_1783296362619.jpg",
+      "options": {
+        "mn": ["Эрвин Смит", "Эрэн Егер", "Леви Аккерман", "Армин"],
+        "en": ["Erwin Smith", "Eren Jaeger", "Levi Ackerman", "Armin Arlert"],
+        "ja": ["エルヴィン・スミス", "エレン・イェーガー", "リヴァイ・アッカーマン", "アルミン・アルレルト"]
+      },
+      "answerIndex": 2,
+      "hint": {
+        "mn": "Тэрээр цэвэрч байдлыг маш их эрхэмлэдэг, богино үстэй.",
+        "en": "He is an absolute clean freak who fights Titans flawlessly.",
+        "ja": "極度の潔癖症で、巨人を一瞬で切り裂く調査兵団の兵長。"
+      }
+    },
+    {
+      "id": 109,
+      "question": {
+        "mn": "Зурган дээрх улбар шар үстэй, Шинигамигийн хүч авсан сурагчийг хэн гэдэг вэ?",
+        "en": "Who is this orange-haired high school student turned Soul Reaper?",
+        "ja": "死神の力を得た、このオレンジ色の髪の男子高校生は誰ですか？"
+      },
+      "image": "/src/assets/images/ichigo_avatar_1783296375366.jpg",
+      "options": {
+        "mn": ["Үрүү Кариа", "Күросаки Ичиго", "Ишида Урюү", "Абараи Рэнжи"],
+        "en": ["Uryu Ishida", "Ichigo Kurosaki", "Yasutora Sado", "Renji Abarai"],
+        "ja": ["石田雨竜", "黒崎一護", "茶渡泰虎", "阿散井恋次"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Түүний сэлэмний нэр бол Зангэцү (Zangetsu).",
+        "en": "His massive Zanpakuto sword is named Zangetsu.",
+        "ja": "彼の巨大な斬魄刀の名は「斬月」。"
+      }
+    },
+    {
+      "id": 110,
+      "question": {
+        "mn": "Зурган дээрх цагаан үстэй, нэг улаан нүдтэй хагас чөтгөрийг хэн гэдэг вэ?",
+        "en": "Who is this white-haired half-ghoul wearing a leather mask?",
+        "ja": "白髪に隻眼の赤眼を持ち、革のマスクを被ったこの半喰種は誰ですか？"
+      },
+      "image": "/src/assets/images/kaneki_avatar_1783296384910.jpg",
+      "options": {
+        "mn": ["Киришима Тока", "Канеки Кэн", "Цүкияма Шү", "Арима Кишо"],
+        "en": ["Touka Kirishima", "Ken Kaneki", "Shu Tsukiyama", "Kisho Arima"],
+        "ja": ["霧嶋董香", "金木研", "月山習", "有馬貴将"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Номонд дуртай оюутан байсан ч Риригийн эрхтэн шилжүүлснээр хувирсан.",
+        "en": "A college student who turned into a ghoul after an organ transplant.",
+        "ja": "臓器移植をきっかけに半喰種になってしまった元大学生。"
+      }
+    },
+    {
+      "id": 111,
+      "question": {
+        "mn": "Зурган дээрх 'Улсын Алхимич' цолтой, намхан нуруутай гэхэд уурладаг хүүг хэн гэдэг вэ?",
+        "en": "Who is this 'State Alchemist' who gets angry when called short?",
+        "ja": "チビと呼ばれると激怒する、この「国家錬金術師」の少年は誰ですか？"
+      },
+      "image": "/src/assets/images/edward_avatar_1783296394914.jpg",
+      "options": {
+        "mn": ["Алфонс Элрик", "Рой Мустанг", "Эдвард Элрик", "Маэс Хьюз"],
+        "en": ["Alphonse Elric", "Roy Mustang", "Edward Elric", "Maes Hughes"],
+        "ja": ["アルフォンス・エルリック", "ロイ・マスタング", "エドワード・エルリック", "マース・ヒューズ"]
+      },
+      "answerIndex": 2,
+      "hint": {
+        "mn": "Баруун гар, зүүн хөл нь механик хиймэл (Auto-mail) эрхтэнтэй.",
+        "en": "Known as the Fullmetal Alchemist with mechanical automail limbs.",
+        "ja": "鋼の右腕と左脚（機械鎧：オートメイル）を持つ「鋼の錬金術師」。"
+      }
+    },
+    {
+      "id": 112,
+      "question": {
+        "mn": "Зурган дээрх All Might-аас залгамжлан авсан баатрыг хэн гэдэг вэ?",
+        "en": "Who is this young green-haired hero who inherited power from All Might?",
+        "ja": "オールマイトから力を受け継いだ、緑色の髪のこの少年ヒーローは誰ですか？"
+      },
+      "image": "/src/assets/images/deku_avatar_1783296409641.jpg",
+      "options": {
+        "mn": ["Бакуго Кацүки", "Тодороки Шото", "Мидория Изүкү (Дэкү)", "Киришима Эйжиро"],
+        "en": ["Katsuki Bakugo", "Shoto Todoroki", "Izuku Midoriya (Deku)", "Eijiro Kirishima"],
+        "ja": ["爆豪勝己", "轟焦凍", "緑谷出久 (デク)", "切島鋭児郎"]
+      },
+      "answerIndex": 2,
+      "hint": {
+        "mn": "Анх ямар ч чадваргүй (Quirkless) төрсөн ч чин сэтгэлээрээ баатар болсон.",
+        "en": "He was born quirkless but possessed the true heart of a hero.",
+        "ja": "無個性で生まれたものの、誰よりも強いヒーローの精神を持つ少年。"
+      }
+    },
+    {
+      "id": 113,
+      "question": {
+        "mn": "Зурган дээрх хулсан амгайтай, чөтгөр болон хувирсан охиныг хэн гэдэг вэ?",
+        "en": "Who is this demon girl with a bamboo muzzle in her mouth?",
+        "ja": "竹製の口枷を咥えた、鬼に変貌してしまったこの少女は誰ですか？"
+      },
+      "image": "/src/assets/images/nezuko_avatar_1783296421801.jpg",
+      "options": {
+        "mn": ["Цүюри Канао", "Кочо Шинобу", "Камадо Нэзүко", "Мицүри Канрожи"],
+        "en": ["Kanao Tsuyuri", "Shinobu Kocho", "Nezuko Kamado", "Mitsuri Kanroji"],
+        "ja": ["栗花落カナヲ", "胡蝶しのぶ", "竈門禰󠄀豆子", "甘露寺蜜璃"]
+      },
+      "answerIndex": 2,
+      "hint": {
+        "mn": "Тэрээр нарнаас хамгаалж модон хайрцаг дотор явдаг.",
+        "en": "She travels inside a wooden box to stay hidden from sunlight.",
+        "ja": "陽の光を避けるために、兄の背負う木箱に入って移動します。"
+      }
+    },
+    {
+      "id": 114,
+      "question": {
+        "mn": "Зурган дээрх 3 сэлэм зэрэг ашиглаж тулалддаг, ногоон үстэй баатрыг хэн гэдэг вэ?",
+        "en": "Who is this green-haired swordsman who fights with three katanas?",
+        "ja": "緑色の髪を持ち、3本の刀を同時に操るこの三刀流の剣士は誰ですか？"
+      },
+      "image": "/src/assets/images/zoro_avatar_1783296433907.jpg",
+      "options": {
+        "mn": ["Ророноа Зоро", "Трафалгар Ло", "Козүки Одэн", "Михок"],
+        "en": ["Roronoa Zoro", "Trafalgar Law", "Kozuki Oden", "Dracule Mihawk"],
+        "ja": ["ロロノア・ゾロ", "トラファルガー・ロー", "光月おでん", "ジュラキュール・ミホーク"]
+      },
+      "answerIndex": 0,
+      "hint": {
+        "mn": "Тэр маш их зүг чиглэлээ алддаг, төөрөх өвчтэй.",
+        "en": "He has a terrible sense of direction and always gets lost.",
+        "ja": "極度の方向音痴で、まっすぐな道でも迷子になります。"
+      }
+    },
+    {
+      "id": 115,
+      "question": {
+        "mn": "Зурган дээрх Шаринган нүдтэй, Үчиха овгийн сүүлчийн залгамжлагчдын нэгийг хэн гэдэг вэ?",
+        "en": "Who is this Sharingan-wielding survivor of the Uchiha clan?",
+        "ja": "写輪眼を宿す、うちは一族の生き残りであるこの忍は誰ですか？"
+      },
+      "image": "/src/assets/images/sasuke_avatar_1783296445967.jpg",
+      "options": {
+        "mn": ["Учиха Итачи", "Учиха Сасүкэ", "Учиха Мадара", "Учиха Обито"],
+        "en": ["Itachi Uchiha", "Sasuke Uchiha", "Madara Uchiha", "Obito Uchiha"],
+        "ja": ["うちはイタチ", "うちはサスケ", "うちはマダラ", "うちはオビト"]
+      },
+      "answerIndex": 1,
+      "hint": {
+        "mn": "Түүний гол чадварууд бол Чидори (Chidori) ба Аматэрасү (Amaterasu) юм.",
+        "en": "His main attacks include Chidori and Amaterasu black flames.",
+        "ja": "千鳥や黒炎を放つ天照（アマテラス）の使い手。"
+      }
+    }
+  ]
+}

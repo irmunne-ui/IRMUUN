@@ -1,426 +1,198 @@
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { X, Trophy, Flame, Heart, Timer, RotateCcw, CheckCircle2, XCircle, Sparkles, HelpCircle, Volume2, VolumeX, Settings } from 'lucide-react';
-import { QUESTIONS_EN, uiTranslations } from './GuesserTranslations';
+import { X, Trophy, Flame, Heart, Timer, RotateCcw, CheckCircle2, XCircle, Sparkles, HelpCircle, Volume2, VolumeX, Swords, BookOpen, ArrowLeft, Trash2, Calendar, Globe } from 'lucide-react';
+import QUESTIONS_DATA from '../data.json';
 
 interface Question {
   id: number;
-  question: string;
-  options: string[];
-  answer: string;
-  hint?: string;
+  question: {
+    mn: string;
+    en: string;
+    ja: string;
+  };
+  options: {
+    mn: string[];
+    en: string[];
+    ja: string[];
+  };
+  answerIndex: number;
+  hint?: {
+    mn: string;
+    en: string;
+    ja: string;
+  };
   image?: string;
 }
 
-const QUESTIONS: Question[] = [
-  {
-    id: 1,
-    question: "Луффигийн хамгийн анхны багийн гишүүн хэн бэ?",
-    options: ["Зоро (Zoro)", "Нами (Nami)", "Усопп (Usopp)", "Санжи (Sanji)"],
-    answer: "Зоро (Zoro)",
-    hint: "Нэгэн цагт Тэнүүчлэн ангууч гэгддэг байсан сэлэмтэн.",
-    image: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 2,
-    question: "Death Note аниме дээрх үхлийн бурхан Люк-ийн дуртай жимс юу вэ?",
-    options: ["Банана (Banana)", "Гүзээлзгэнэ (Strawberry)", "Алим (Apple)", "Усан үзэм (Grape)"],
-    answer: "Алим (Apple)",
-    hint: "Улаан бөгөөд шүүслэг, дэлхийнх илүү амттай гэдэг.",
-    image: "https://images.unsplash.com/photo-1543002588-bfa74002ed7e?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 3,
-    question: "Нарутогийн хамгийн анхны багш хэн бэ?",
-    options: ["Какаши (Kakashi)", "Жирайя (Jiraiya)", "Ирүка (Iruka)", "Гуравдугаар Хокагэ"],
-    answer: "Ирүка (Iruka)",
-    hint: "Духан дээрээ хэвтээ сорвитой, Нарутог бага байхад нь ганцаараа ойлгож хайрласан багш.",
-    image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 4,
-    question: "Demon Slayer (Чөтгөр ангууч) анимений гол дүрийн хүүгийн нэр хэн бэ?",
-    options: ["Зэницу (Zenitsu)", "Танжиро (Tanjiro)", "Иносүкэ (Inosuke)", "Гиюү (Giyu)"],
-    answer: "Танжиро (Tanjiro)",
-    hint: "Дүү Незукогоо буцааж хүн болгохоор чөтгөрүүдтэй тэмцдэг.",
-    image: "https://images.unsplash.com/photo-1524135329990-07660cd5bf10?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 5,
-    question: "Хаяо Миязакигийн хамгийн алдартай, Оскарын шагнал хүртсэн алдарт бүтээл аль нь вэ?",
-    options: ["My Neighbor Totoro", "Howl's Moving Castle", "Spirited Away", "Princess Mononoke"],
-    answer: "Spirited Away",
-    hint: "Тихиро охины хачин жигтэй халуун усны газарт өнгөрүүлсэн түүх.",
-    image: "https://images.unsplash.com/photo-1503899036084-c55cdd92da26?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 6,
-    question: "Jujutsu Kaisen-ий хамгийн хүчирхэг шидтэн хэн бэ?",
-    options: ["Итадори Юүжи (Yuji Itadori)", "Фүшигүро Мэгүми (Megumi)", "Гожо Сатору (Gojo Satoru)", "Нанами Кэнто (Nanami)"],
-    answer: "Гожо Сатору (Gojo Satoru)",
-    hint: "Нүдний боолттой, Хязгааргүй хоосон орон зайн эзэн.",
-    image: "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 7,
-    question: "One Punch Man-ий гол дүр Саитама яагаад үсээ алдаж халзан болсон бэ?",
-    options: ["Бурхны хараалаас болж", "Хэт их, шаргуу дасгал хийснээс болж", "Хорон санаатны тусгай туяанаас болж", "Удамшлын халзралт"],
-    answer: "Хэт их, шаргуу дасгал хийснээс болж",
-    hint: "Өдөр бүр 100 суниалт, 100 squats, 10км гүйлт хийдэг байсан.",
-    image: "https://images.unsplash.com/photo-1517838277536-f5f99be501cd?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 8,
-    question: "Attack on Titan анимед хүн төрөлхтнийг хамгаалдаг хамгийн гаднах ханыг юу гэж нэрлэдэг вэ?",
-    options: ["Мариа хана (Wall Maria)", "Роуз хана (Wall Rose)", "Сина хана (Wall Sina)", "Титаны хана (Wall Titan)"],
-    answer: "Мариа хана (Wall Maria)",
-    hint: "Эхний ангид Колоссал титаны дайралтаар нурдаг хана.",
-    image: "https://images.unsplash.com/photo-1486873249359-2731bd6dafc7?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 9,
-    question: "Dragon Ball анимед Сон Гокугийн төрөлх Саиян гаригийн нэр юу вэ?",
-    options: ["Намэк гариг (Planet Namek)", "Вегета гариг (Planet Vegeta)", "Фрийза гариг", "Дэлхий (Earth)"],
-    answer: "Вегета гариг (Planet Vegeta)",
-    hint: "Түүний өрсөлдөгч хунтайжтай ижил нэртэй гариг.",
-    image: "https://images.unsplash.com/photo-1618336753974-aae8e04506aa?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 10,
-    question: "Hunter x Hunter анимений гол дүр Гон-ын хамгийн сайн найзыг хэн гэдэг вэ?",
-    options: ["Курапика (Kurapika)", "Леорио (Leorio)", "Киллуа (Killua)", "Хисока (Hisoka)"],
-    answer: "Киллуа (Killua)",
-    hint: "Золдик алуурчны гэр бүлээс гаралтай, цахилгаан ашигладаг хүү.",
-    image: "https://images.unsplash.com/photo-1612036782180-6f0b6cd846fe?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 11,
-    question: "Fullmetal Alchemist анимед Элрик ах дүүсийн алдсан биеэ буцаан авахын тулд хайж буй зүйл юу вэ?",
-    options: ["Мөнхийн ус (Elixir of Life)", "Гүн ухаантны чулуу (Philosopher's Stone)", "Ган хавтан", "Хөрвүүлэлтийн тойрог"],
-    answer: "Гүн ухаантны чулуу (Philosopher's Stone)",
-    hint: "Тэнгэрийн ухаан, тэнцүү солилцооны дүрмийг зөрчих хүчтэй чулуу.",
-    image: "https://images.unsplash.com/photo-1601004890684-d8cbf643f5f2?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 12,
-    question: "My Hero Academia аниме дээр Дэкү-ийн хүлээн авсан хүчирхэг чадварыг юу гэж нэрлэдэг вэ?",
-    options: ["All for One", "One for All", "Explosion", "Half-Cold Half-Hot"],
-    answer: "One for All",
-    hint: "Үеэс үед уламжлагдан дамжиж ирсэн, Бүхний тусын тулд нэгэн хүч.",
-    image: "https://images.unsplash.com/photo-1563089145-599997674d42?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 13,
-    question: "Bleach анимений гол дүрийн хүүгийн нэр хэн бэ?",
-    options: ["Ичиго Күрөсаки (Ichigo Kurosaki)", "Рэнжи Абараи (Renji Abarai)", "Урюү Ишида (Uryu Ishida)", "Ясутора Садо (Yasutora Sado)"],
-    answer: "Ичиго Күрөсаки (Ichigo Kurosaki)",
-    hint: "Лууван шиг улбар шар үстэй, Шинигамигийн (Үхлийн элч) хүчийг авсан хүү.",
-    image: "https://images.unsplash.com/photo-1550684848-fac1c5b4e853?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 14,
-    question: "Tokyo Ghoul анимений гол дүр Кэн Канэки ямар хэргийн улмаас хагас гүүл (ghoul) болдог вэ?",
-    options: ["Гүүлд хазуулж амьд үлдсэнээс болж", "Гүүлийн эрхтэн шилжүүлэн суулгуулснаас болж", "Тусгай эм ууснаас болж", "Төрөлхийн гүүлийн удамшилтай байсан"],
-    answer: "Гүүлийн эрхтэн шилжүүлэн суулгуулснаас болж",
-    hint: "Риза нэртэй гүүл охины дайралтад өртөж, эмнэлэгт түүний эрхтнийг суулгуулдаг.",
-    image: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 15,
-    question: "Sword Art Online анимед Киритогийн гол зэвсэг болох хар сэлэмний нэр юу вэ?",
-    options: ["Elucidator", "Dark Repulser", "Excalibur", "Lambent Light"],
-    answer: "Elucidator",
-    hint: "50-р давхрын боссоос унасан, Киритогийн хос сэлэмний баруун гартаа барьдаг хар өнгөтэй сэлэм.",
-    image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 16,
-    question: "Chainsaw Man анимений гол дүр Дэнжи-ийн гэрээ байгуулсан хөрөөт чөтгөр нохойны нэр юу вэ?",
-    options: ["Кони (Koni)", "Почита (Pochita)", "Курама (Kurama)", "Аки (Aki)"],
-    answer: "Почита (Pochita)",
-    hint: "Духан дээрээ хөрөөтэй, маш өхөөрдөм улбар шар өнгөтэй чөтгөр нохой.",
-    image: "https://images.unsplash.com/photo-1533929736458-ca588eb77445?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 17,
-    question: "Sailor Moon анимений гол дүрийн охины жинхэнэ нэр хэн бэ?",
-    options: ["Усаги Цукино (Usagi Tsukino)", "Рэй Хино (Rei Hino)", "Ами Мизуно (Ami Mizuno)", "Минако Аино (Minako Aino)"],
-    answer: "Усаги Цукино (Usagi Tsukino)",
-    hint: "Нэр нь япон хэлээр 'Саран дээрх туулай' гэсэн утгатай.",
-    image: "https://images.unsplash.com/photo-1518156677180-95a2893f3e9f?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 18,
-    question: "Steins;Gate анимений гол дүр Окабэ Ринтаро өөрийгөө ямар нэрээр дууддаг вэ?",
-    options: ["Хооин Кёома (Hououin Kyouma)", "Жон Титор (John Titor)", "Кристина (Christina)", "Маюри (Mayuri)"],
-    answer: "Хооин Кёома (Hououin Kyouma)",
-    hint: "Өөрийгөө галзуу эрдэмтэн гэж нэрлэдэг түүний зохиомол нууц нэр.",
-    image: "https://images.unsplash.com/photo-1508873535684-277a3cbcc4e8?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 19,
-    question: "Fairy Tail анимед Нацу Драгнил ямар төрлийн шид ашигладаг вэ?",
-    options: ["Мөсний шид (Ice Make)", "Луугийн алуурчны галын шид (Fire Dragon Slayer)", "Тэнгэрийн шид (Sky Magic)", "Үгийн шид (Letter Magic)"],
-    answer: "Луугийн алуурчны галын шид (Fire Dragon Slayer)",
-    hint: "Түүнийг өсгөсөн галын луу Игнилээс сурсан шид.",
-    image: "https://images.unsplash.com/photo-1562157873-818bc0726f68?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 20,
-    question: "Neon Genesis Evangelion анимед гол дүр Шиндзи Икари ямар дугаартай Ева (Evangelion)-г жолооддог вэ?",
-    options: ["Eva-00", "Eva-01", "Eva-02", "Eva-05"],
-    answer: "Eva-01",
-    hint: "Ягаан хөх өнгөтэй, түүний ээжийн сүнсийг агуулсан анхдагч загвар.",
-    image: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 21,
-    question: "Black Clover анимений гол дүр Аста яагаад шид ашигладдаггүй вэ?",
-    options: ["Шидийн хүчгүй (Mana) төрсөн учраас", "Шидийг нь хэн нэгэн хулгайлсан тул", "Бага байхдаа гэмтэл авсан тул", "Улсынхаа хуулиар хориглогдсон учраас"],
-    answer: "Шидийн хүчгүй (Mana) төрсөн учраас",
-    hint: "Тэрээр шидийн хүчгүй төрсөн ч үүнийгээ нөхөж маш их биеийн бэлтгэл хийдэг.",
-    image: "https://images.unsplash.com/photo-1519074069444-1ba4e6663104?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 22,
-    question: "Haikyuu!! анимений гол дүр Хината Шоёо ямар байрлалд тоглодог вэ?",
-    options: ["Setter (Холбогч)", "Libero (Амрагч)", "Middle Blocker (Дунд хамгаалагч)", "Wing Spiker (Довтлогч)"],
-    answer: "Middle Blocker (Дунд хамгаалагч)",
-    hint: "Хэдийгээр намхан ч гэсэн маш өндөр үсрэх чадвартай учир дунд хамгаалалтын байрлалд тоглодог.",
-    image: "https://images.unsplash.com/photo-1592656094267-764a45159012?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 23,
-    question: "Mob Psycho 100 анимений гол дүр Шигэо Кагэямагийн багш, өөрийгөө хүчирхэг шидтэн гэж нэрлэдэг залилагч хэн бэ?",
-    options: ["Рэйгэн Аратака (Reigen Arataka)", "Рицу Кагэяма (Ritsu)", "Тэруки Ханазава (Teruki)", "Димпл (Dimple)"],
-    answer: "Рэйгэн Аратака (Reigen Arataka)",
-    hint: "Хэдий шидийн хүчгүй ч гэсэн ярианы урлаг, массажаараа үйлчлүүлэгчдийг татдаг.",
-    image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 24,
-    question: "One Piece анимед Гранд Лайн (Grand Line) урсгалыг хуваадаг том тивийг юу гэж нэрлэдэг вэ?",
-    options: ["Рэд Лайн (Red Line)", "Кальм Бэлт (Calm Belt)", "Скайпиа (Skypiea)", "Шинэ Ертөнц (New World)"],
-    answer: "Рэд Лайн (Red Line)",
-    hint: "Дэлхийг бүтэн тойрсон улаан шороон аварга том хад/тив.",
-    image: "https://images.unsplash.com/photo-1559136555-9303baea8ebd?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 25,
-    question: "Naruto аниме дээр Саскэ Учихаг багийн гишүүнээсээ явж, Орочимарутай нэгдэхэд хүргэсэн гол зорилго нь юу байсан бэ?",
-    options: ["Ах Итачигаас өшөө авахын тулд", "Коноха тосгоныг устгахын тулд", "Хокагэ болохын тулд", "Сакураг өөртөө татахын тулд"],
-    answer: "Ах Итачигаас өшөө авахын тулд",
-    hint: "Гэр бүл, овгийг нь устгасан ахаа хөнөөх хүч чадлыг олж авахыг хүссэн.",
-    image: "https://images.unsplash.com/photo-1552374196-1ab2a1c593e8?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 26,
-    question: "Demon Slayer анимед Незуко яагаад амндаа хулс зууж явдаг вэ?",
-    options: ["Хүн хазаж, цус сорохоос сэргийлж", "Ярьж сурахгүйн тулд", "Хулсанд дуртай учраас", "Шидээ хадгалахын тулд"],
-    answer: "Хүн хазаж, цус сорохоос сэргийлж",
-    hint: "Усан багана Гиюү түүнд зүүлгэсэн бөгөөд чөтгөрийн зөн совингоо хянах тусламж болдог.",
-    image: "https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 27,
-    question: "Attack on Titan анимед хамгийн анхны ухаант титан (Founding Titan)-ыг авсан түүхэн эмэгтэйн нэр хэн бэ?",
-    options: ["Имир Фриц (Ymir Fritz)", "Хисториа Рейсс (Historia Reiss)", "Микаса Аккерман (Mikasa)", "Карла Йегер (Carla)"],
-    answer: "Имир Фриц (Ymir Fritz)",
-    hint: "2000 жилийн өмнө титаны эх үүсвэртэй холбогдсон боол охин.",
-    image: "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 28,
-    question: "Code Geass анимед Лелуш Ламперужийн авсан өрөөсөн нүдэнд нь гэрэлтдэг, хүнийг удирдах чадварыг юу гэж нэрлэдэг вэ?",
-    options: ["Geass", "Sharingan", "Byakugan", "Death Eye"],
-    answer: "Geass",
-    hint: "Хааны тушаал шиг нэг удаа ямар ч хүнийг бүрэн үгэндээ оруулах чадвар.",
-    image: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 29,
-    question: "Death Note анимед L-ийн залгамжлагч бөгөөд Кираг барьж чаддаг цагаан үстэй хүүгийн нэр хэн бэ?",
-    options: ["Ниар (Near)", "Мэлло (Mello)", "Мацуда (Matsuda)", "Миса (Misa)"],
-    answer: "Ниар (Near)",
-    hint: "Таавар, тоглоомоор тоглох дуртай, SPK байгууллагын удирдагч.",
-    image: "https://images.unsplash.com/photo-1516979187457-637abb4f9353?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 30,
-    question: "Spy x Family анимед Лоид Форжер (Цагаан зүс)-ийн нууц ажиллагааны нэр юу вэ?",
-    options: ["Operation Strix", "Operation Owl", "Operation Eclipse", "Operation Twilight"],
-    answer: "Operation Strix",
-    hint: "Энх тайвныг хамгаалахын тулд гэр бүл зохиож, бай руу ойртох төлөвлөгөө.",
-    image: "https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 31,
-    question: "Your Name (Kimi no Na wa) анимед гол дүрүүд болох Таки, Мицуха нарын бие солигдоход нөлөөлсөн сансрын үзэгдэл юу вэ?",
-    options: ["Сүүлт одны уналт (Comet Passing)", "Нарны хиртэлт", "Сарны хиртэлт", "Сансрын шуурга"],
-    answer: "Сүүлт одны уналт (Comet Passing)",
-    hint: "1200 жилийн мөчлөгтэй Тиамат сүүлт од дэлхийн хажуугаар өнгөрөх үе.",
-    image: "https://images.unsplash.com/photo-1419242902214-272b3f66ee7a?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 32,
-    question: "Bleach анимед Ичигогийн ашигладаг сэлэмний нэр юу вэ?",
-    options: ["Zangetsu", "Senbonzakura", "Hyorinmaru", "Zabimaru"],
-    answer: "Zangetsu",
-    hint: "Япон хэлээр 'Үлдэгч сар' гэсэн утгатай, аварга том хар хутга шиг хэлбэртэй сэлэм.",
-    image: "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 33,
-    question: "Jujutsu Kaisen анимед Итадори Юүжи ямар хараагдсан зүйлийг залгиж Сүкүнагийн биеллэлийг өөртөө авдаг вэ?",
-    options: ["Сүкүнагийн хуруу (Sukuna's Finger)", "Улаан нүд", "Шидэт зүү", "Хараалтай яс"],
-    answer: "Сүкүнагийн хуруу (Sukuna's Finger)",
-    hint: "Нийт 20 ширхэг байдаг, Сүкүнагийн хараагдсан хурууны нэг.",
-    image: "https://images.unsplash.com/photo-1511447333015-45b65e60f6d5?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 34,
-    question: "My Neighbor Totoro анимений Тоторо ямар амьтан бэ?",
-    options: ["Ойн савдаг / Сүнс (Forest Spirit)", "Баавгай", "Муур", "Туулай"],
-    answer: "Ойн савдаг / Сүнс (Forest Spirit)",
-    hint: "Ойн гүнд амьдардаг, аварга том, зөөлөн биетэй ойн хамгаалагч.",
-    image: "https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 35,
-    question: "Vinland Saga анимед Торфинны эцэг Торсыг хэн хөлсний алуурчдын занганд оруулан хөнөөдөг вэ?",
-    options: ["Аскеладд (Askeladd)", "Флоки (Floki)", "Торкелл (Thorkell)", "Канут (Canute)"],
-    answer: "Аскеладд (Askeladd)",
-    hint: "Торфинны өшөөгөө авахыг хүссэн, зальтай ухаалаг викинг ахлагч.",
-    image: "https://images.unsplash.com/photo-1507608869274-d3177c8bb4c7?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 36,
-    question: "Hunter x Hunter анимед Гон, Киллуа хоёр нэн ховор 'Greed Island' тоглоомыг хаанаас олж тоглодог вэ?",
-    options: ["Гон-ы аавын үлдээсэн санах ойгоор", "Дуудлага худалдаанаас", "Нууц агуйгаас", "Хантерийн холбооны төвөөс"],
-    answer: "Гон-ы аавын үлдээсэн санах ойгоор",
-    hint: "Аав Жин Фрийксийнх нь үлдээсэн Memory Card болон JoyStation консолын тусламжтай тоглодог.",
-    image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 37,
-    question: "Dr. Stone анимений гол дүр Ишигами Сэнку ямар ундааг хамгийн түрүүнд хийж найзууддаа өгдөг вэ?",
-    options: ["Кола (Cola)", "Шар айраг", "Лимонад", "Сүү"],
-    answer: "Кола (Cola)",
-    hint: "Нүүрсхүчлийн хий, карбонатлаг ус болон кориандр зэрэг байгалийн амт оруулагч ашиглан хийсэн ундаа.",
-    image: "https://images.unsplash.com/photo-1527018601619-a508a2be00cd?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 38,
-    question: "Cyberpunk: Edgerunners анимед Дэвид Мартинесийн нуруундаа суулгуулдаг цэргийн зэрэглэлийн хүчирхэг кибер суулгац юу вэ?",
-    options: ["Сандевистан (Sandevistan)", "Керензиков (Kerenzikov)", "Мантис ир (Mantis Blades)", "Моно утас (Monowire)"],
-    answer: "Сандевистан (Sandevistan)",
-    hint: "Маш өндөр хурдтай хөдлөх боломж олгодог цэргийн зэрэглэлийн суулгац.",
-    image: "https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 39,
-    question: "Fullmetal Alchemist анимед Улсын алдартай сөнөөгч, 'Дөл шидэт' (Flame Alchemist) хэн бэ?",
-    options: ["Рой Мустанг (Roy Mustang)", "Эдвард Элрик (Edward)", "Алекс Армстронг", "Маэс Хьюз"],
-    answer: "Рой Мустанг (Roy Mustang)",
-    hint: "Тусгай бээлий ашиглан хуруугаа няслах бүртээ асар хүчтэй гал гаргадаг хурандаа.",
-    image: "https://images.unsplash.com/photo-1498084393753-b411b2d26b34?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 40,
-    question: "Jujutsu Jaisen анимед Мэгүми Фүшигүрогийн дууддаг хамгийн хүчирхэг, дарагдашгүй сүнс (Shikigami)-ийн нэр юу вэ?",
-    options: ["Махорага (Mahoraga)", "Садахару", "Курама", "Диваажингийн хаалгач"],
-    answer: "Махорага (Mahoraga)",
-    hint: "Ямар ч төрлийн дайралт, хүчинд маш хурдан дасан зохицож, эдгэрдэг хамгийн дээд зэрэглэлийн сүнс.",
-    image: "https://images.unsplash.com/photo-1500485035595-cbe6f645feb1?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 41,
-    question: "One Piece анимед Портгас Д. Эйс-ийн идсэн чөтгөрийн жимсний нэр юу вэ?",
-    options: ["Мера Мера но Ми (Mera Mera no Mi)", "Гому Гому но Ми", "Гура Гора но Ми", "Хиэ Хиэ но Ми"],
-    answer: "Мера Мера но Ми (Mera Mera no Mi)",
-    hint: "Түүнд гал удирдах болон гал болон хувирах хүч чадлыг өгсөн Логиа төрлийн жимс.",
-    image: "https://images.unsplash.com/photo-1496317556649-f930d733eea3?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 42,
-    question: "Fate/Stay Night анимед Сэйбер (Saber)-ийн жинхэнэ нэр хэн бэ?",
-    options: ["Armour Хаан (Artoria Pendragon)", "Жанна д'Арк", "Гильгамеш", "Александр Хаан"],
-    answer: "Артур Хаан (Artoria Pendragon)",
-    hint: "Британийн домогт хаан, Экскалибур сэлэмний эзэн.",
-    image: "https://images.unsplash.com/photo-1599740831114-171ef0891823?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 43,
-    question: "Black Clover анимед Астагийн авсан 5 навчтай гэрийн хошоонгор бүхий ном (Grimoire)-нд хэн амьдардаг вэ?",
-    options: ["Чөтгөр (Devil)", "Элф", "Сүнс", "Эртний хаан"],
-    answer: "Чөтгөр (Devil)",
-    hint: "5 дахь навчинд чөтгөр оршдог гэж ярьдаг.",
-    image: "https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 44,
-    question: "No Game No Life анимед 'Blank' гэдэг нэрээр алдаршсан хос хэн бэ?",
-    options: ["Сора, Широ (Sora & Shiro)", "Кото, Нацу", "Кирито, Асуна", "Ичиго, Рукиа"],
-    answer: "Сора, Широ (Sora & Shiro)",
-    hint: "Тоглоомын ертөнцөд хэзээ ч ялагдаж үзээгүй ах дүү хоёрын нэр.",
-    image: "https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 45,
-    question: "Re:Zero анимед Сүбару үхэх бүртээ цаг хугацаагаар ухардаг чадвараа юу гэж нэрлэдэг вэ?",
-    options: ["Үхлээр эргэх (Return by Death)", "Цаг хугацааны урсгал", "Сүнсний шилжилт", "Харанхуйн гэрээ"],
-    answer: "Үхлээр эргэх (Return by Death)",
-    hint: "Атаархлын шулмын өгсөн, үхэх замаар өнгөрсөн рүү буцдаг хараал.",
-    image: "https://images.unsplash.com/photo-1509198397868-475647b2a1e5?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 46,
-    question: "Fire Force анимед 3-р үеийн гал сөнөөгч Шинра Күсакабэ яагаад 'Чөтгөрийн ул мөр' (Devil's Footprints) гэж нэрлэгддэг vэ?",
-    options: ["Хөлнөөсөө гал гаргаж нисдэг тул", "Чөтгөр шиг царайтай тул", "Газарт гишгэх бүрт хар мөр үлддэг тул", "Чөтгөрийн цустай тул"],
-    answer: "Хөлнөөсөө гал гаргаж нисдэг тул",
-    hint: "Хөлнийхөө уулнаас гал гарган өндөр хурдаар хөдөлдөг чадвартай.",
-    image: "https://images.unsplash.com/photo-1518156677180-95a2893f3e9f?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 47,
-    question: "Blue Lock анимед тоглогчдыг бэлтгэдэг байгууламжийн гол зорилго юу вэ?",
-    options: ["Дэлхийн шилдэг довтлогчийг бэлтгэх", "Хамгийн шилдэг хамгаалагчийг бэлтгэх", "Хаалгач бэлтгэх", "Багаар тоглох чадварыг сайжруулах"],
-    answer: "Дэлхийн шилдэг довтлогчийг бэлтгэх",
-    hint: "Японы хөлбөмбөгийн шигшээ багийг Дэлхийн аварга болгох хувийн үзэлтэй шилдэг ганц довтлогчийг төрүүлэх.",
-    image: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 48,
-    question: "Gintama анимед Гинтокигийн ажиллуулдаг бүхнийг хийх газрыг юу гэж нэрлэдэг vэ?",
-    options: ["Ёрозуяа (Yorozuya)", "Кабуки хаус", "Шинсэнгүми", "Садахару"],
-    answer: "Ёрозуяа (Yorozuya)",
-    hint: "Мөнгөний төлөө ямар ч хамаагүй ажил (гэр цэвэрлэхээс авахуулаад сансар руу нисэх хүртэл) хийдэг газар.",
-    image: "https://images.unsplash.com/photo-1542224566-6e85f2e6772f?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 49,
-    question: "Overlord анимед гол дүр Момонга (Аинз Оал Гоун) ямар тоглоомын ертөнцөд үлдэж хоцорсон бэ?",
-    options: ["Yggdrasil", "Sword Art Online", "Elder Tale", "The World"],
-    answer: "Yggdrasil",
-    hint: "DMMO-RPG төрлийн алдартай тоглоом бөгөөд сервер нь хаагдах мөчид тэрээр тоглоомондоо үлддэг.",
-    image: "https://images.unsplash.com/photo-1552820728-8b83bb6b773f?w=600&auto=format&fit=crop&q=80"
-  },
-  {
-    id: 50,
-    question: "Fullmetal Alchemist: Brotherhood аниме дээрх Хүмүүн бусуудыг (Homunculus) хэн удирддаг вэ?",
-    options: ["Эцэг (Father)", "Үхэл (Death)", "Данте (Dante)", "Хаан Брэдли"],
-    answer: "Эцэг (Father)",
-    hint: "Шилэн колбон доторх бяцхан хүнээс үүссэн, улс орныг золиослох төлөвлөгөөтэй гол дайсан.",
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=600&auto=format&fit=crop&q=80"
-  }
-];
+interface LeaderboardEntry {
+  score: number;
+  maxStreak: number;
+  mode: 'trivia' | 'heroes';
+  lang: 'mn' | 'en' | 'ja';
+  date: string;
+}
 
 interface AnimeGuesserProps {
   isOpen: boolean;
   onClose: () => void;
 }
 
+const UI_TEXT = {
+  mn: {
+    title: "Anime Guesser",
+    subtitle: "Аниме сонирхогчдын сорилт",
+    beta: "Хувилбар v2.5",
+    menu: "Цэс",
+    newGame: "Шинээр",
+    soundOn: "Дуутай",
+    soundOff: "Дуугүй",
+    score: "Оноо",
+    combo: "Цуврал",
+    question: "Асуулт",
+    hint: "Санамж",
+    correct: "Тийм ээ, зөв хариуллаа! 🎉 +15 оноо",
+    incorrect: "Буруу хариуллаа! 😢 Зөв хариулт: ",
+    timeUp: "Хугацаа дууслаа! ⏳",
+    startTitle: "Аниме Таагч Тоглоом",
+    startDesc: "Аниме ертөнцийн мэдлэгээ сорих горимыг сонгон тоглоорой!",
+    triviaMode: "Асуулт Хариулт",
+    triviaDesc: "Аниме зохиол, сонирхолтой түүхүүдийн талаар асуултууд.",
+    heroesMode: "Баатрын Дүр Таах",
+    heroesDesc: "Luffy, Naruto, Tanjiro, Goku зэрэг алдарт баатруудын зургийг хараад таах.",
+    rulesTitle: "ТОГЛООМЫН ДҮРЭМ:",
+    rulesTime: "Асуултын хугацаа",
+    rulesTimeVal: "15 секунд",
+    rulesLives: "Тоглогчийн амь",
+    rulesLivesVal: "5 амь ❤️",
+    rulesCorrect: "Зөв хариулт",
+    rulesCorrectVal: "+15 оноо",
+    rulesCombo: "3 дараалж зөв хариулбал",
+    rulesComboVal: "+10 BONUS 🔥",
+    btnStart: "ТОГЛООМЫГ ЭХЛЭХ",
+    gameOverTitle: "Тоглоом дууслаа! 💔",
+    gameOverDesc: "Та амиа бүгдийг алдлаа. Өөр горим туршиж эсвэл дахин үзээрэй!",
+    totalScore: "Нийт оноо",
+    maxStreak: "Хамгийн урт цуврал",
+    btnPlayAgain: "ДАХИН ТОГЛОХ",
+    btnGoMenu: "ТОГЛООМЫН ЦЭС",
+    btnGoLobby: "ЛОББИ РҮҮ БУЦАХ",
+    victoryTitle: "Ялалт! Баяр хүргэе! 🏆🎉",
+    victoryDesc: "Та манай бүх асуултад амжилттай хариулж, аниме таагч аваргын цолыг хүртлээ!",
+    leaderboardTitle: "Шилдэг Амжилтууд (Leaderboard)",
+    noLeaderboard: "Одоогоор бүртгэгдсэн амжилт байхгүй байна.",
+    colRank: "Байр",
+    colScore: "Оноо",
+    colMode: "Горим",
+    colLang: "Хэл",
+    colDate: "Огноо",
+    clearLeaderboard: "Түүх устгах",
+    langSelect: "Хэл сонгох"
+  },
+  en: {
+    title: "Anime Guesser",
+    subtitle: "The Ultimate Anime Trivia",
+    beta: "Version v2.5",
+    menu: "Menu",
+    newGame: "Restart",
+    soundOn: "Sound On",
+    soundOff: "Muted",
+    score: "Score",
+    combo: "Streak",
+    question: "Question",
+    hint: "Hint",
+    correct: "Yes, correct answer! 🎉 +15 pts",
+    incorrect: "Wrong answer! 😢 Correct was: ",
+    timeUp: "Time's up! ⏳",
+    startTitle: "Anime Guesser Game",
+    startDesc: "Choose a game mode to test your anime knowledge!",
+    triviaMode: "Anime Trivia",
+    triviaDesc: "Questions about anime lore, plots, and trivia facts.",
+    heroesMode: "Character Guesser",
+    heroesDesc: "Identify famous heroes like Luffy, Naruto, Tanjiro, Goku from their portraits.",
+    rulesTitle: "GAME RULES:",
+    rulesTime: "Time per question",
+    rulesTimeVal: "15 seconds",
+    rulesLives: "Starting lives",
+    rulesLivesVal: "5 lives ❤️",
+    rulesCorrect: "Correct answer",
+    rulesCorrectVal: "+15 pts",
+    rulesCombo: "3 consecutive correct",
+    rulesComboVal: "+10 BONUS 🔥",
+    btnStart: "START GAME",
+    gameOverTitle: "Game Over! 💔",
+    gameOverDesc: "You lost all your lives. Try another mode or test again!",
+    totalScore: "Total Score",
+    maxStreak: "Max Streak",
+    btnPlayAgain: "PLAY AGAIN",
+    btnGoMenu: "GAME MENU",
+    btnGoLobby: "EXIT TO LOBBY",
+    victoryTitle: "Victory! Congratulations! 🏆🎉",
+    victoryDesc: "You answered all questions correctly and achieved the Ultimate Anime Master title!",
+    leaderboardTitle: "Leaderboard",
+    noLeaderboard: "No high scores recorded yet.",
+    colRank: "Rank",
+    colScore: "Score",
+    colMode: "Mode",
+    colLang: "Lang",
+    colDate: "Date",
+    clearLeaderboard: "Clear Scores",
+    langSelect: "Select Language"
+  },
+  ja: {
+    title: "アニメゲッサー",
+    subtitle: "究極のアニメクイズ",
+    beta: "バージョン v2.5",
+    menu: "メニュー",
+    newGame: "リスタート",
+    soundOn: "音量オン",
+    soundOff: "ミュート",
+    score: "スコア",
+    combo: "コンボ",
+    question: "問題",
+    hint: "ヒント",
+    correct: "正解です！🎉 +15点",
+    incorrect: "残念、不正解です！😢 正解は: ",
+    timeUp: "時間切れです！⏳",
+    startTitle: "アニメゲッサーゲーム",
+    startDesc: "ゲームモードを選択して、アニメの知識をテストしましょう！",
+    triviaMode: "アニメクイズ",
+    triviaDesc: "アニメの世界観、ストーリー、豆知識に関する問題。",
+    heroesMode: "キャラクター当て",
+    heroesDesc: "ルフィ、ナルト、炭治郎、悟空などの有名なヒーローを画像から当てます。",
+    rulesTitle: "ゲームのルール:",
+    rulesTime: "制限時間",
+    rulesTimeVal: "15秒",
+    rulesLives: "持ちライフ",
+    rulesLivesVal: "5ライフ ❤️",
+    rulesCorrect: "正解",
+    rulesCorrectVal: "+15点",
+    rulesCombo: "3回連続正解で",
+    rulesComboVal: "+10 ボーナス 🔥",
+    btnStart: "ゲームスタート",
+    gameOverTitle: "ゲームオーバー！💔",
+    gameOverDesc: "すべてのライフを失いました。再挑戦するか、他のモードをお試しください！",
+    totalScore: "合計スコア",
+    maxStreak: "最大コンボ",
+    btnPlayAgain: "もう一度プレイ",
+    btnGoMenu: "ゲームメニュー",
+    btnGoLobby: "ロビーに戻る",
+    victoryTitle: "完全勝利！おめでとうございます！🏆🎉",
+    victoryDesc: "すべてのクイズに見事正解し、究極のアニメマスターの称号を獲得しました！",
+    leaderboardTitle: "リーダーボード",
+    noLeaderboard: "まだ記録はありません。",
+    colRank: "順位",
+    colScore: "スコア",
+    colMode: "モード",
+    colLang: "言語",
+    colDate: "日付",
+    clearLeaderboard: "記録をクリア",
+    langSelect: "言語選択"
+  }
+};
+
 export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
+  const [lang, setLang] = useState<'mn' | 'en' | 'ja'>('mn');
+  const [gameMode, setGameMode] = useState<'trivia' | 'heroes'>('trivia');
   const [currentIdx, setCurrentIdx] = useState(0);
   const [score, setScore] = useState(0);
   const [lives, setLives] = useState(5);
@@ -437,30 +209,46 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
   const [showComboAnimation, setShowComboAnimation] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [shakeButton, setShakeButton] = useState<string | null>(null);
-
-  // Language settings states
-  const [lang, setLang] = useState<'mn' | 'en'>(() => {
-    const saved = localStorage.getItem('anime_guesser_lang');
-    return (saved === 'en' || saved === 'mn') ? saved : 'mn';
-  });
-  const [showSettings, setShowSettings] = useState(false);
-
-  useEffect(() => {
-    localStorage.setItem('anime_guesser_lang', lang);
-  }, [lang]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  const currentQuestionRaw = QUESTIONS[currentIdx];
-  const currentQuestion = {
-    ...currentQuestionRaw,
-    question: lang === 'en' ? (QUESTIONS_EN[currentQuestionRaw.id]?.question ?? currentQuestionRaw.question) : currentQuestionRaw.question,
-    options: lang === 'en' ? (QUESTIONS_EN[currentQuestionRaw.id]?.options ?? currentQuestionRaw.options) : currentQuestionRaw.options,
-    answer: lang === 'en' ? (QUESTIONS_EN[currentQuestionRaw.id]?.answer ?? currentQuestionRaw.answer) : currentQuestionRaw.answer,
-    hint: lang === 'en' ? (QUESTIONS_EN[currentQuestionRaw.id]?.hint ?? currentQuestionRaw.hint) : currentQuestionRaw.hint,
+  const t = UI_TEXT[lang];
+
+  // Cast raw JSON data into localized Question structure
+  const currentQuestions: Question[] = (gameMode === 'trivia' ? QUESTIONS_DATA.trivia : QUESTIONS_DATA.heroes) as unknown as Question[];
+
+  // Load Leaderboard from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('anime_guesser_leaderboard');
+    if (saved) {
+      try {
+        setLeaderboard(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse leaderboard:", e);
+      }
+    }
+  }, []);
+
+  const saveLeaderboardEntry = (finalScore: number, finalMaxStreak: number) => {
+    const newEntry: LeaderboardEntry = {
+      score: finalScore,
+      maxStreak: finalMaxStreak,
+      mode: gameMode,
+      lang: lang,
+      date: new Date().toLocaleDateString() + ' ' + new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+    };
+    const updated = [newEntry, ...leaderboard]
+      .sort((a, b) => b.score - a.score)
+      .slice(0, 10); // Keep top 10 scores
+    setLeaderboard(updated);
+    localStorage.setItem('anime_guesser_leaderboard', JSON.stringify(updated));
   };
 
-  const t = uiTranslations[lang];
+  const clearLeaderboard = () => {
+    setLeaderboard([]);
+    localStorage.removeItem('anime_guesser_leaderboard');
+  };
 
   // Web Audio synth engine for lag-free retro sounds
   const playSound = (type: 'ding' | 'buzz' | 'bonus' | 'gameover' | 'win') => {
@@ -472,7 +260,6 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
       const now = ctx.currentTime;
 
       if (type === 'ding') {
-        // Double rising chime
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sine';
@@ -485,7 +272,6 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
         osc.start(now);
         osc.stop(now + 0.3);
       } else if (type === 'buzz') {
-        // Raspy low buzz with a slight shake
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'sawtooth';
@@ -498,7 +284,6 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
         osc.start(now);
         osc.stop(now + 0.25);
       } else if (type === 'bonus') {
-        // Arpeggio triumph chime
         const gain = ctx.createGain();
         gain.gain.setValueAtTime(0.06, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
@@ -514,7 +299,6 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
           osc.stop(now + 0.5);
         });
       } else if (type === 'gameover') {
-        // Sad falling synth
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.type = 'triangle';
@@ -527,7 +311,6 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
         osc.start(now);
         osc.stop(now + 0.6);
       } else if (type === 'win') {
-        // Fun retro fanfare
         const gain = ctx.createGain();
         gain.gain.setValueAtTime(0.08, now);
         gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
@@ -545,7 +328,7 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
         });
       }
     } catch (e) {
-      console.warn("AudioContext block:", e);
+      console.warn("AudioContext blocked or uninitialized:", e);
     }
   };
 
@@ -561,7 +344,6 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
     timerRef.current = setInterval(() => {
       setTimeLeft((prev) => {
         if (prev <= 1) {
-          // Time expired! Handled as wrong answer
           handleTimeout();
           return 0;
         }
@@ -572,7 +354,7 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [gameStatus, currentIdx, selectedOption]);
+  }, [gameStatus, currentIdx, selectedOption, gameMode]);
 
   const handleTimeout = () => {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -581,11 +363,16 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
     setSelectedOption(""); // empty is incorrect
     const nextLives = lives - 1;
     setLives(nextLives);
+    
+    const finalStreak = streak;
     setStreak(0);
 
     if (nextLives <= 0) {
       setTimeout(() => {
         playSound('gameover');
+        const finalMax = finalStreak > maxStreak ? finalStreak : maxStreak;
+        setMaxStreak(finalMax);
+        saveLeaderboardEntry(score, finalMax);
         setGameStatus('gameover');
       }, 1500);
     } else {
@@ -604,14 +391,18 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
     setGameStatus('playing');
   };
 
-  const handleOptionClick = (option: string) => {
+  const resetToMenu = () => {
+    setGameStatus('start');
+  };
+
+  const handleOptionClick = (option: string, optionIndex: number) => {
     if (selectedOption !== null || gameStatus !== 'playing') return;
 
     if (timerRef.current) clearInterval(timerRef.current);
 
     setSelectedOption(option);
-    const correctAns = currentQuestion.answer;
-    const answerIsCorrect = option === correctAns;
+    const correctIndex = currentQuestions[currentIdx].answerIndex;
+    const answerIsCorrect = optionIndex === correctIndex;
 
     setIsCorrect(answerIsCorrect);
 
@@ -639,11 +430,16 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
       setTimeout(() => setShakeButton(null), 500);
       const nextLives = lives - 1;
       setLives(nextLives);
+      
+      const finalStreak = streak;
       setStreak(0);
 
       if (nextLives <= 0) {
         setTimeout(() => {
           playSound('gameover');
+          const finalMax = finalStreak > maxStreak ? finalStreak : maxStreak;
+          setMaxStreak(finalMax);
+          saveLeaderboardEntry(score, finalMax);
           setGameStatus('gameover');
         }, 1500);
       } else {
@@ -656,13 +452,16 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
     setTimeout(() => {
       setIsTransitioning(true);
       setTimeout(() => {
-        if (currentIdx + 1 < QUESTIONS.length) {
+        if (currentIdx + 1 < currentQuestions.length) {
           setCurrentIdx((prev) => prev + 1);
           setSelectedOption(null);
           setIsCorrect(null);
           setIsTransitioning(false);
         } else {
           playSound('win');
+          const finalMax = streak > maxStreak ? streak : maxStreak;
+          setMaxStreak(finalMax);
+          saveLeaderboardEntry(score, finalMax);
           setGameStatus('victory');
           setIsTransitioning(false);
         }
@@ -687,7 +486,7 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
             initial={{ opacity: 0, scale: 0.95, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-            className="relative w-full max-w-2xl bg-zinc-950 border border-orange-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[670px] max-h-[92vh] z-10 text-white"
+            className="relative w-full max-w-2xl bg-zinc-950 border border-orange-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[740px] max-h-[95vh] z-10 text-white"
           >
             {/* Glowing orange/red accent line on top */}
             <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-600 via-[#e8702a] to-amber-500" />
@@ -705,30 +504,44 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
                   <p className="text-xs text-zinc-400">{t.subtitle}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                {/* Settings Toggle */}
-                <button
-                  onClick={() => setShowSettings(!showSettings)}
-                  className={`p-2 transition-colors rounded-full border ${
-                    showSettings 
-                      ? 'bg-orange-500/20 border-orange-500 text-white' 
-                      : 'bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white border-zinc-800'
-                  }`}
-                  title={t.settings}
-                >
-                  <Settings className="w-4 h-4" />
-                </button>
+              
+              <div className="flex items-center gap-2">
+                {/* Back to Menu (only during active game) */}
+                {gameStatus === 'playing' && (
+                  <button
+                    onClick={resetToMenu}
+                    className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors rounded-full border border-zinc-800 flex items-center justify-center gap-1 px-3 cursor-pointer"
+                    title={t.btnGoMenu}
+                  >
+                    <ArrowLeft className="w-3.5 h-3.5 text-orange-400" />
+                    <span className="text-xs font-mono">{t.menu}</span>
+                  </button>
+                )}
+
+                {/* Restart Button (only during active game) */}
+                {gameStatus === 'playing' && (
+                  <button
+                    onClick={startNewGame}
+                    className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors rounded-full border border-zinc-800 flex items-center justify-center gap-1.5 px-3 cursor-pointer"
+                    title={t.newGame}
+                  >
+                    <RotateCcw className="w-3.5 h-3.5 text-orange-400 animate-spin-slow" />
+                    <span className="text-xs font-mono font-bold">{t.newGame}</span>
+                  </button>
+                )}
+
                 {/* Sound Toggle */}
                 <button
                   onClick={() => setSoundEnabled(!soundEnabled)}
-                  className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors rounded-full border border-zinc-800"
-                  title={soundEnabled ? t.soundOff : t.soundOn}
+                  className="p-2 bg-zinc-900 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors rounded-full border border-zinc-800 cursor-pointer"
+                  title={soundEnabled ? t.soundOn : t.soundOff}
                 >
                   {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
                 </button>
+                
                 <button
                   onClick={onClose}
-                  className="p-2 rounded-full hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors border border-zinc-900 bg-zinc-900/50"
+                  className="p-2 rounded-full hover:bg-zinc-800 text-zinc-400 hover:text-white transition-colors border border-zinc-900 bg-zinc-900/50 cursor-pointer"
                   aria-label="Close modal"
                 >
                   <X className="w-5 h-5" />
@@ -739,416 +552,506 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
             {/* Main Interactive Screen */}
             <div className="flex-1 overflow-y-auto p-5 sm:p-6 flex flex-col justify-between relative">
               <AnimatePresence mode="wait">
-                {showSettings ? (
+                {/* Combo/Streak Bonus Pop-up */}
+                {showComboAnimation && (
                   <motion.div
-                    key="settings-overlay"
-                    initial={{ opacity: 0, scale: 0.95 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.95 }}
-                    className="flex-1 flex flex-col justify-between max-w-md mx-auto py-4 w-full h-full"
+                    initial={{ opacity: 0, scale: 0.5, y: 50 }}
+                    animate={{ opacity: 1, scale: 1.3, y: -20 }}
+                    exit={{ opacity: 0, scale: 0.8 }}
+                    className="absolute inset-x-0 top-1/3 mx-auto z-50 flex flex-col items-center justify-center pointer-events-none"
                   >
-                    <div className="space-y-6">
-                      <div className="flex items-center gap-3 pb-4 border-b border-zinc-900">
-                        <Settings className="w-5 h-5 text-orange-400" />
-                        <h4 className="text-lg font-semibold">{t.settings}</h4>
-                      </div>
+                    <div className="bg-gradient-to-r from-amber-600 to-orange-500 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 border border-amber-400 animate-bounce">
+                      <Flame className="w-6 h-6 text-yellow-300 animate-pulse" />
+                      <span className="font-mono font-black text-xl tracking-wider">COMBO BONUS +10!! 🔥</span>
+                    </div>
+                  </motion.div>
+                )}
 
-                      {/* Language Selection */}
-                      <div className="space-y-3">
-                        <label className="text-xs font-mono text-zinc-400 uppercase tracking-wider block">
-                          {t.language}
-                        </label>
-                        <div className="grid grid-cols-2 gap-3">
+                {/* 1. START SCREEN & MODE SELECTION */}
+                {gameStatus === 'start' && (
+                  <motion.div
+                    key="start"
+                    initial={{ opacity: 0, y: 15 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -15 }}
+                    className="flex-1 flex flex-col justify-start relative py-1"
+                  >
+                    {/* Top Row: Language Picker and Close */}
+                    <div className="flex flex-wrap items-center justify-between gap-4 mb-5 border-b border-zinc-900/60 pb-3">
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-orange-400 shrink-0" />
+                        <span className="text-xs font-mono text-zinc-400 uppercase tracking-wide">{t.langSelect}:</span>
+                      </div>
+                      <div className="flex gap-1 bg-zinc-900/80 p-0.5 rounded-xl border border-zinc-800">
+                        {(['mn', 'en', 'ja'] as const).map((l) => (
                           <button
-                            onClick={() => setLang('mn')}
-                            className={`p-4 rounded-2xl border text-sm font-medium transition-all cursor-pointer text-center ${
-                              lang === 'mn'
-                                ? 'bg-orange-500/15 border-[#e8702a] text-white font-bold'
-                                : 'bg-zinc-900/40 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white'
+                            key={l}
+                            onClick={() => setLang(l)}
+                            className={`px-3 py-1.5 rounded-lg text-xs font-mono font-bold transition-all flex items-center gap-1.5 cursor-pointer ${
+                              lang === l
+                                ? 'bg-orange-500 text-white shadow-md shadow-orange-500/20 scale-105'
+                                : 'text-zinc-400 hover:text-white hover:bg-zinc-800'
                             }`}
                           >
-                            🇲🇳 Монгол
+                            <span>{l === 'mn' ? '🇲🇳 MN' : l === 'en' ? '🇺🇸 EN' : '🇯🇵 JA'}</span>
                           </button>
-                          <button
-                            onClick={() => setLang('en')}
-                            className={`p-4 rounded-2xl border text-sm font-medium transition-all cursor-pointer text-center ${
-                              lang === 'en'
-                                ? 'bg-orange-500/15 border-[#e8702a] text-white font-bold'
-                                : 'bg-zinc-900/40 border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-white'
-                            }`}
-                          >
-                            🇺🇸 English
-                          </button>
-                        </div>
-                      </div>
-
-                      {/* Sound Selection */}
-                      <div className="space-y-3">
-                        <label className="text-xs font-mono text-zinc-400 uppercase tracking-wider block">
-                          {lang === 'en' ? 'Sound FX' : 'Дууны эффект'}
-                        </label>
-                        <button
-                          onClick={() => setSoundEnabled(!soundEnabled)}
-                          className={`w-full p-4 rounded-2xl border text-sm font-medium transition-all cursor-pointer flex items-center justify-between ${
-                            soundEnabled
-                              ? 'bg-orange-500/10 border-orange-500/30 text-white'
-                              : 'bg-zinc-900/40 border-zinc-800 text-zinc-400'
-                          }`}
-                        >
-                          <span>{soundEnabled ? t.soundOn : t.soundOff}</span>
-                          <span className="text-xs font-mono text-orange-400 px-2 py-0.5 bg-zinc-900 border border-zinc-800 rounded-full">
-                            {soundEnabled ? "ON" : "OFF"}
-                          </span>
-                        </button>
+                        ))}
                       </div>
                     </div>
 
-                    <button
-                      onClick={() => setShowSettings(false)}
-                      className="w-full bg-[#e8702a] hover:bg-[#d2611f] text-white font-semibold py-3.5 rounded-xl transition-all cursor-pointer text-center mt-6"
-                    >
-                      {t.close}
-                    </button>
-                  </motion.div>
-                ) : (
-                  <>
-                    {/* Combo/Streak Bonus Pop-up */}
-                    {showComboAnimation && (
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.5, y: 50 }}
-                        animate={{ opacity: 1, scale: 1.3, y: -20 }}
-                        exit={{ opacity: 0, scale: 0.8 }}
-                        className="absolute inset-x-0 top-1/3 mx-auto z-50 flex flex-col items-center justify-center pointer-events-none"
-                      >
-                        <div className="bg-gradient-to-r from-amber-600 to-orange-500 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-2 border border-amber-400 animate-bounce">
-                          <Flame className="w-6 h-6 text-yellow-300 animate-pulse" />
-                          <span className="font-mono font-black text-xl tracking-wider">COMBO BONUS +10!! 🔥</span>
-                        </div>
-                      </motion.div>
-                    )}
-
-                    {/* 1. START SCREEN */}
-                    {gameStatus === 'start' && (
-                      <motion.div
-                        key="start"
-                        initial={{ opacity: 0, y: 15 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: -15 }}
-                        className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto py-8"
-                      >
-                        <div className="relative mb-6">
-                          <div className="absolute inset-0 bg-orange-500/15 rounded-full blur-3xl" />
-                          <Flame className="w-16 h-16 text-[#e8702a] animate-pulse relative z-10" />
-                        </div>
-                        <h4 className="text-2xl font-semibold mb-3 tracking-tight">{t.startTitle}</h4>
-                        <p className="text-sm text-zinc-400 leading-relaxed mb-6">
-                          {t.startSubtitle}
-                        </p>
-
-                        {/* Rules Summary */}
-                        <div className="w-full bg-zinc-900/50 border border-zinc-800 rounded-2xl p-4 mb-6 text-left space-y-2.5 text-xs font-mono">
-                          <div className="text-zinc-500 uppercase tracking-widest text-[10px] font-bold pb-1 border-b border-zinc-800/80">{t.rulesTitle}</div>
-                          <div className="flex items-center justify-between text-zinc-300">
-                            <span className="flex items-center gap-1.5"><Timer className="w-3.5 h-3.5 text-orange-400" /> {t.ruleTime}</span>
-                            <span className="text-white font-bold">{t.ruleTimeValue}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-zinc-300">
-                            <span className="flex items-center gap-1.5"><Heart className="w-3.5 h-3.5 text-red-500" /> {t.ruleLives}</span>
-                            <span className="text-white font-bold">{t.ruleLivesValue}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-zinc-300">
-                            <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-yellow-400" /> {t.ruleCorrect}</span>
-                            <span className="text-white font-bold">{t.ruleCorrectValue}</span>
-                          </div>
-                          <div className="flex items-center justify-between text-zinc-300">
-                            <span className="flex items-center gap-1.5"><Flame className="w-3.5 h-3.5 text-orange-500" /> {t.ruleCombo}</span>
-                            <span className="text-white font-bold">{t.ruleComboValue}</span>
-                          </div>
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-start">
+                      {/* Left: Settings & Game Options */}
+                      <div className="md:col-span-7 space-y-4">
+                        <div className="text-left">
+                          <h4 className="text-xl sm:text-2xl font-semibold tracking-tight text-white mb-1 flex items-center gap-2">
+                            <Sparkles className="w-5 h-5 text-yellow-400" />
+                            {t.startTitle}
+                          </h4>
+                          <p className="text-xs sm:text-sm text-zinc-400 leading-relaxed mb-4">
+                            {t.startDesc}
+                          </p>
                         </div>
 
-                        <button
-                          onClick={startNewGame}
-                          className="w-full bg-[#e8702a] hover:bg-[#d2611f] text-white font-semibold py-4 rounded-xl transition-all hover:scale-102 hover:shadow-lg hover:shadow-orange-500/20 active:scale-98 cursor-pointer flex items-center justify-center gap-2"
-                        >
-                          <Sparkles className="w-4 h-4 text-yellow-300" />
-                          <span>{t.startButton}</span>
-                        </button>
-                      </motion.div>
-                    )}
+                        {/* Mode Selector Cards */}
+                        <div className="grid grid-cols-1 gap-3 w-full">
+                          {/* Mode 1: Trivia */}
+                          <button
+                            onClick={() => setGameMode('trivia')}
+                            className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col gap-2 group cursor-pointer ${
+                              gameMode === 'trivia'
+                                ? 'bg-orange-500/10 border-orange-500 text-white shadow-lg shadow-orange-500/5'
+                                : 'bg-zinc-900/40 border-zinc-900 text-zinc-300 hover:bg-zinc-900/75 hover:border-zinc-800'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className={`p-2 rounded-xl ${gameMode === 'trivia' ? 'bg-orange-500/20 text-orange-400' : 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200'}`}>
+                                <BookOpen className="w-5 h-5" />
+                              </div>
+                              {gameMode === 'trivia' && (
+                                <div className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-ping absolute top-4 right-4" />
+                              )}
+                            </div>
+                            <span className="font-semibold text-sm">{t.triviaMode}</span>
+                            <span className="text-xs text-zinc-400 leading-relaxed">
+                              {t.triviaDesc}
+                            </span>
+                          </button>
 
-                    {/* 2. PLAYING SCREEN */}
-                    {gameStatus === 'playing' && (
-                      <motion.div
-                        key="playing"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="flex-1 flex flex-col justify-between"
-                      >
-                        {/* Status Bar */}
-                        <div className="flex items-center justify-between pb-3 border-b border-zinc-900 text-xs font-mono">
-                          {/* Score Tracker */}
-                          <div className="flex items-center gap-1.5">
-                            <Trophy className="w-4 h-4 text-amber-400" />
-                            <span className="text-zinc-400">{t.score}:</span>
-                            <span className="text-white font-bold text-sm">{score}</span>
+                          {/* Mode 2: Character Guesser */}
+                          <button
+                            onClick={() => setGameMode('heroes')}
+                            className={`p-4 rounded-2xl border text-left transition-all relative overflow-hidden flex flex-col gap-2 group cursor-pointer ${
+                              gameMode === 'heroes'
+                                ? 'bg-orange-500/10 border-orange-500 text-white shadow-lg shadow-orange-500/5'
+                                : 'bg-zinc-900/40 border-zinc-900 text-zinc-300 hover:bg-zinc-900/75 hover:border-zinc-800'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between">
+                              <div className={`p-2 rounded-xl ${gameMode === 'heroes' ? 'bg-orange-500/20 text-orange-400' : 'bg-zinc-800 text-zinc-400 group-hover:text-zinc-200'}`}>
+                                <Swords className="w-5 h-5" />
+                              </div>
+                              {gameMode === 'heroes' && (
+                                <div className="w-2.5 h-2.5 rounded-full bg-orange-500 animate-ping absolute top-4 right-4" />
+                              )}
+                            </div>
+                            <span className="font-semibold text-sm flex items-center gap-1.5">
+                              {t.heroesMode}
+                            </span>
+                            <span className="text-xs text-zinc-400 leading-relaxed">
+                              {t.heroesDesc}
+                            </span>
+                          </button>
+                        </div>
+
+                        {/* Rules Summary Card */}
+                        <div className="w-full bg-zinc-900/40 border border-zinc-900 rounded-2xl p-3.5 space-y-2 text-xs font-mono">
+                          <div className="text-zinc-500 uppercase tracking-widest text-[9px] font-bold pb-1 border-b border-zinc-800/80">{t.rulesTitle}</div>
+                          <div className="flex items-center justify-between text-zinc-300">
+                            <span className="flex items-center gap-1.5"><Timer className="w-3.5 h-3.5 text-orange-400" /> {t.rulesTime}</span>
+                            <span className="text-white font-bold">{t.rulesTimeVal}</span>
                           </div>
-
-                          {/* Combo / Streak Tracker */}
-                          <div className="flex items-center gap-1 bg-zinc-900/60 border border-zinc-800 rounded-full px-2.5 py-1">
-                            <Flame className={`w-3.5 h-3.5 ${streak > 0 ? 'text-orange-500 animate-pulse' : 'text-zinc-600'}`} />
-                            <span className="text-[10px] text-zinc-400">{t.combo}:</span>
-                            <span className={`font-bold ${streak > 0 ? 'text-orange-400' : 'text-zinc-500'}`}>{streak}</span>
+                          <div className="flex items-center justify-between text-zinc-300">
+                            <span className="flex items-center gap-1.5"><Heart className="w-3.5 h-3.5 text-red-500" /> {t.rulesLives}</span>
+                            <span className="text-white font-bold">{t.rulesLivesVal}</span>
                           </div>
+                          <div className="flex items-center justify-between text-zinc-300">
+                            <span className="flex items-center gap-1.5"><Sparkles className="w-3.5 h-3.5 text-yellow-400" /> {t.rulesCorrect}</span>
+                            <span className="text-white font-bold">{t.rulesCorrectVal}</span>
+                          </div>
+                          <div className="flex items-center justify-between text-zinc-300">
+                            <span className="flex items-center gap-1.5"><Flame className="w-3.5 h-3.5 text-orange-500" /> {t.rulesCombo}</span>
+                            <span className="text-white font-bold">{t.rulesComboVal}</span>
+                          </div>
+                        </div>
+                      </div>
 
-                          {/* Lives Tracker */}
-                          <div className="flex items-center gap-1">
-                            {[...Array(5)].map((_, idx) => (
-                              <Heart
+                      {/* Right: Leaderboard High Scores */}
+                      <div className="md:col-span-5 bg-zinc-900/30 border border-zinc-900 rounded-2xl p-4 flex flex-col h-[380px] sm:h-[420px]">
+                        <div className="flex items-center justify-between border-b border-zinc-800 pb-2.5 mb-3">
+                          <span className="text-xs font-bold uppercase tracking-wider text-orange-400 flex items-center gap-1.5">
+                            <Trophy className="w-4 h-4" /> {t.leaderboardTitle}
+                          </span>
+                          {leaderboard.length > 0 && (
+                            <button
+                              onClick={clearLeaderboard}
+                              className="text-[10px] text-zinc-500 hover:text-red-400 transition-colors flex items-center gap-1 cursor-pointer"
+                              title={t.clearLeaderboard}
+                            >
+                              <Trash2 className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+
+                        {leaderboard.length === 0 ? (
+                          <div className="flex-1 flex flex-col items-center justify-center text-center p-4 text-zinc-600 font-mono text-xs">
+                            <Trophy className="w-8 h-8 opacity-25 mb-2" />
+                            <p>{t.noLeaderboard}</p>
+                          </div>
+                        ) : (
+                          <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                            {leaderboard.map((entry, idx) => (
+                              <div
                                 key={idx}
-                                className={`w-4 h-4 transition-all ${
-                                  idx < lives ? 'text-red-500 fill-red-500 scale-100' : 'text-zinc-700 scale-90'
-                                }`}
-                              />
+                                className="flex items-center justify-between p-2 rounded-xl bg-zinc-950/60 border border-zinc-900 hover:border-orange-500/10 transition-colors text-xs font-mono"
+                              >
+                                <div className="flex items-center gap-2">
+                                  <span className={`w-5 h-5 rounded-md flex items-center justify-center text-[10px] font-bold ${
+                                    idx === 0 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
+                                    idx === 1 ? 'bg-zinc-400/20 text-zinc-300 border border-zinc-400/30' :
+                                    idx === 2 ? 'bg-amber-700/20 text-amber-500 border border-amber-700/30' :
+                                    'bg-zinc-900 text-zinc-500'
+                                  }`}>
+                                    {idx + 1}
+                                  </span>
+                                  <div>
+                                    <div className="flex items-center gap-1.5">
+                                      <span className="text-white font-bold">{entry.score} {t.score}</span>
+                                      <span className="text-[9px] px-1.5 py-0.2 bg-zinc-800 text-zinc-400 rounded lowercase">
+                                        {entry.mode}
+                                      </span>
+                                    </div>
+                                    <div className="text-[9px] text-zinc-500 flex items-center gap-1">
+                                      <Calendar className="w-2.5 h-2.5" />
+                                      <span>{entry.date}</span>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div className="text-right">
+                                  <div className="text-[10px] text-orange-400 flex items-center gap-0.5 justify-end">
+                                    <Flame className="w-3 h-3 fill-orange-500/10" />
+                                    <span>{entry.maxStreak}</span>
+                                  </div>
+                                  <span className="text-[9px] text-zinc-500 uppercase">{entry.lang}</span>
+                                </div>
+                              </div>
                             ))}
                           </div>
-                        </div>
+                        )}
+                      </div>
+                    </div>
 
-                        {/* Progress Time Bar */}
-                        <div className="w-full h-1 bg-zinc-900 rounded-full overflow-hidden mt-2 relative">
-                          <motion.div
-                            className={`h-full ${
-                              timeLeft > 5 ? 'bg-orange-500' : 'bg-red-500 animate-pulse'
-                            }`}
-                            initial={{ width: '100%' }}
-                            animate={{ width: `${(timeLeft / 15) * 100}%` }}
-                            transition={{ duration: selectedOption === null ? 1 : 0.2, ease: 'linear' }}
+                    <div className="mt-5">
+                      <button
+                        onClick={startNewGame}
+                        className="w-full bg-[#e8702a] hover:bg-[#d2611f] text-white font-semibold py-3.5 rounded-xl transition-all hover:scale-101 hover:shadow-lg hover:shadow-orange-500/20 active:scale-99 cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <Sparkles className="w-4 h-4 text-yellow-300 animate-pulse" />
+                        <span className="uppercase tracking-wider">{t.btnStart}</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* 2. PLAYING SCREEN */}
+                {gameStatus === 'playing' && (
+                  <motion.div
+                    key="playing"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="flex-1 flex flex-col justify-between"
+                  >
+                    {/* Status Bar */}
+                    <div className="flex items-center justify-between pb-3 border-b border-zinc-900 text-xs font-mono">
+                      {/* Score Tracker */}
+                      <div className="flex items-center gap-1.5">
+                        <Trophy className="w-4 h-4 text-amber-400" />
+                        <span className="text-zinc-400">{t.score}:</span>
+                        <span className="text-white font-bold text-sm">{score}</span>
+                      </div>
+
+                      {/* Combo / Streak Tracker */}
+                      <div className="flex items-center gap-1 bg-zinc-900/60 border border-zinc-800 rounded-full px-2.5 py-1">
+                        <Flame className={`w-3.5 h-3.5 ${streak > 0 ? 'text-orange-500 animate-pulse' : 'text-zinc-600'}`} />
+                        <span className="text-[10px] text-zinc-400">{t.combo}:</span>
+                        <span className={`font-bold ${streak > 0 ? 'text-orange-400' : 'text-zinc-500'}`}>{streak}</span>
+                      </div>
+
+                      {/* Lives Tracker */}
+                      <div className="flex items-center gap-1">
+                        {[...Array(5)].map((_, idx) => (
+                          <Heart
+                             key={idx}
+                             className={`w-4 h-4 transition-all ${
+                               idx < lives ? 'text-red-500 fill-red-500 scale-100' : 'text-zinc-700 scale-90'
+                             }`}
                           />
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Progress Time Bar */}
+                    <div className="w-full h-1 bg-zinc-900 rounded-full overflow-hidden mt-2 relative">
+                      <motion.div
+                        className={`h-full ${
+                          timeLeft > 5 ? 'bg-orange-500' : 'bg-red-500 animate-pulse'
+                        }`}
+                        initial={{ width: '100%' }}
+                        animate={{ width: `${(timeLeft / 15) * 100}%` }}
+                        transition={{ duration: selectedOption === null ? 1 : 0.2, ease: 'linear' }}
+                      />
+                    </div>
+
+                    {/* Question Card */}
+                    <div className="flex-1 flex flex-col justify-center py-3 select-none">
+                      <div className="text-center mb-1">
+                        <span className="text-xs font-mono text-orange-400 tracking-widest uppercase">
+                          {t.question} {currentIdx + 1} / {currentQuestions.length}
+                        </span>
+                      </div>
+
+                      {/* Hero Image Container for Character Mode */}
+                      {currentQuestions[currentIdx].image && !isTransitioning && (
+                        <div className="flex justify-center my-2">
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            className="relative w-32 h-32 sm:w-36 sm:h-36 rounded-2xl overflow-hidden border-2 border-orange-500/40 shadow-xl shadow-orange-500/10 bg-zinc-900"
+                          >
+                            <img
+                              src={currentQuestions[currentIdx].image}
+                              alt="Guess the hero"
+                              className="w-full h-full object-cover"
+                              referrerPolicy="no-referrer"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent pointer-events-none" />
+                          </motion.div>
                         </div>
+                      )}
 
-                        {/* Question Card */}
-                        <div className="flex-1 flex flex-col justify-center py-4 sm:py-6 select-none">
-                          <div className="text-center mb-1">
-                            <span className="text-xs font-mono text-orange-400 tracking-widest uppercase">{t.questionNum} {currentIdx + 1} / {QUESTIONS.length}</span>
-                          </div>
-
-                          {/* Question Text wrapper */}
-                          <div className="min-h-[60px] flex items-center justify-center text-center px-2">
-                            <AnimatePresence mode="wait">
-                              {!isTransitioning ? (
-                                <motion.h4
-                                  key={currentIdx}
-                                  initial={{ opacity: 0, scale: 0.98 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  exit={{ opacity: 0, scale: 0.98 }}
-                                  transition={{ duration: 0.2 }}
-                                  className="text-base sm:text-lg font-medium leading-relaxed max-w-xl text-white"
-                                >
-                                  {currentQuestion.question}
-                                </motion.h4>
-                              ) : (
-                                <div className="w-8 h-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
-                              )}
-                            </AnimatePresence>
-                          </div>
-
-                          {/* Anime Image shown after answer */}
-                          <div className="h-36 flex items-center justify-center mt-2 overflow-hidden">
-                            <AnimatePresence>
-                              {selectedOption !== null && currentQuestion.image && (
-                                <motion.div
-                                  initial={{ opacity: 0, scale: 0.92, y: 10 }}
-                                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                                  exit={{ opacity: 0, scale: 0.92, y: 10 }}
-                                  className="w-full max-w-sm h-32 rounded-2xl overflow-hidden relative border shadow-2xl transition-all duration-300"
-                                  style={{
-                                    borderColor: isCorrect
-                                      ? 'rgba(16, 185, 129, 0.5)' // Emerald green glow
-                                      : 'rgba(239, 68, 68, 0.5)',  // Red glow
-                                    boxShadow: isCorrect 
-                                      ? '0 10px 25px -5px rgba(16, 185, 129, 0.2)'
-                                      : '0 10px 25px -5px rgba(239, 68, 68, 0.2)'
-                                  }}
-                                >
-                                  <img
-                                    src={currentQuestion.image}
-                                    alt="Anime atmosphere"
-                                    referrerPolicy="no-referrer"
-                                    className="w-full h-full object-cover"
-                                  />
-                                  {/* Dark gradient overlay */}
-                                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent flex items-end justify-between px-4 py-2">
-                                    <span className="text-[10px] font-mono font-bold tracking-widest text-zinc-300 uppercase px-2.5 py-1 bg-black/60 rounded-lg">
-                                      {currentQuestion.answer}
-                                    </span>
-                                    <span className="text-[10px] font-mono font-bold text-orange-400 uppercase">
-                                      {t.correctOverlay}
-                                    </span>
-                                  </div>
-                                </motion.div>
-                              )}
-                            </AnimatePresence>
-                          </div>
-
-                          {/* Help/Hint Indicator */}
-                          {currentQuestion.hint && selectedOption === null && (
-                            <div className="flex items-center justify-center gap-1 text-[11px] text-zinc-500 font-mono mt-2">
-                              <HelpCircle className="w-3.5 h-3.5 text-zinc-600" />
-                              <span>{t.hint}: {currentQuestion.hint}</span>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Option Buttons Grid */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-2 select-none">
-                          {currentQuestion.options.map((option) => {
-                            const correctAns = currentQuestion.answer;
-                            const isThisSelected = selectedOption === option;
-                            const isThisCorrect = option === correctAns;
-                            const hasSelected = selectedOption !== null;
-
-                            // Styling states
-                            let btnStyle = "bg-zinc-900/40 border-zinc-800/80 text-zinc-200 hover:border-orange-500/50 hover:bg-orange-500/5";
-
-                            if (hasSelected) {
-                              if (isThisCorrect) {
-                                btnStyle = "bg-emerald-950/40 border-emerald-500 text-emerald-200 shadow-md shadow-emerald-950/30";
-                              } else if (isThisSelected) {
-                                btnStyle = "bg-red-950/40 border-red-500 text-red-200 shadow-md shadow-red-950/30";
-                              } else {
-                                btnStyle = "bg-zinc-900/20 border-zinc-900 text-zinc-600 opacity-60";
-                              }
-                            }
-
-                            // Check if shaking is active for this button
-                            const isShaking = shakeButton === option;
-
-                            return (
-                              <motion.button
-                                key={option}
-                                onClick={() => handleOptionClick(option)}
-                                disabled={hasSelected}
-                                whileHover={!hasSelected ? { scale: 1.02, boxShadow: "0 0 12px rgba(232,112,42,0.15)" } : {}}
-                                whileTap={!hasSelected ? { scale: 0.98 } : {}}
-                                animate={isShaking ? {
-                                  x: [-6, 6, -6, 6, -4, 4, 0],
-                                  transition: { duration: 0.4 }
-                                } : {}}
-                                className={`w-full p-3.5 rounded-2xl border text-sm text-left transition-all duration-200 flex items-center justify-between font-medium cursor-pointer ${btnStyle}`}
-                              >
-                                <span>{option}</span>
-                                {hasSelected && isThisCorrect && (
-                                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 ml-2" />
-                                )}
-                                {hasSelected && isThisSelected && !isThisCorrect && (
-                                  <XCircle className="w-4 h-4 text-red-400 shrink-0 ml-2" />
-                                )}
-                              </motion.button>
-                            );
-                          })}
-                        </div>
-
-                        {/* Feedback Status */}
-                        <div className="h-6 text-center text-xs font-mono mt-2">
-                          {selectedOption !== null && (
-                            <motion.span
-                              initial={{ opacity: 0, y: 5 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              className={isCorrect ? "text-emerald-400" : "text-red-400"}
+                      {/* Question Text wrapper */}
+                      <div className="min-h-[50px] flex items-center justify-center text-center px-2">
+                        <AnimatePresence mode="wait">
+                          {!isTransitioning ? (
+                            <motion.h4
+                              key={currentIdx}
+                              initial={{ opacity: 0, scale: 0.98 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.98 }}
+                              transition={{ duration: 0.2 }}
+                              className="text-sm sm:text-base font-semibold leading-relaxed max-w-xl text-white"
                             >
-                              {isCorrect ? t.correctFeedback : `${t.incorrectFeedback}: ${currentQuestion.answer}`}
-                            </motion.span>
+                              {currentQuestions[currentIdx].question[lang]}
+                            </motion.h4>
+                          ) : (
+                            <div className="w-8 h-8 rounded-full border-2 border-orange-500 border-t-transparent animate-spin" />
                           )}
+                        </AnimatePresence>
+                      </div>
+
+                      {/* Help/Hint Indicator */}
+                      {currentQuestions[currentIdx].hint && selectedOption === null && (
+                        <div className="flex items-center justify-center gap-1 text-[10px] sm:text-[11px] text-zinc-500 font-mono mt-2">
+                          <HelpCircle className="w-3.5 h-3.5 text-zinc-600 animate-pulse" />
+                          <span>{t.hint}: {currentQuestions[currentIdx].hint[lang]}</span>
                         </div>
-                      </motion.div>
-                    )}
+                      )}
+                    </div>
 
-                    {/* 3. GAME OVER SCREEN */}
-                    {gameStatus === 'gameover' && (
-                      <motion.div
-                        key="gameover"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto py-8"
-                      >
-                        <div className="relative mb-6">
-                          <div className="absolute inset-0 bg-red-500/10 rounded-full blur-3xl animate-pulse" />
-                          <XCircle className="w-16 h-16 text-red-500 relative z-10" />
-                        </div>
+                    {/* Option Buttons Grid */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pb-2 select-none">
+                      {currentQuestions[currentIdx].options[lang].map((option, idx) => {
+                        const isThisSelected = selectedOption === option;
+                        const isThisCorrect = idx === currentQuestions[currentIdx].answerIndex;
+                        const hasSelected = selectedOption !== null;
 
-                        <h4 className="text-2xl font-semibold mb-2 tracking-tight">{t.gameOverTitle}</h4>
-                        <p className="text-zinc-400 text-sm mb-6 leading-relaxed">
-                          {t.gameOverSubtitle}
-                        </p>
+                        // Styling states
+                        let btnStyle = "bg-zinc-900/40 border-zinc-800/80 text-zinc-200 hover:border-orange-500/50 hover:bg-orange-500/5";
 
-                        {/* Score Summary Box */}
-                        <div className="w-full bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 mb-8 grid grid-cols-2 gap-4 font-mono">
-                          <div className="border-r border-zinc-800/80 pr-2">
-                            <span className="text-zinc-500 text-[10px] block uppercase tracking-wider">{t.totalScore}</span>
-                            <span className="text-3xl font-black text-white">{score}</span>
-                          </div>
-                          <div className="pl-2">
-                            <span className="text-zinc-500 text-[10px] block uppercase tracking-wider">{t.maxStreak}</span>
-                            <span className="text-3xl font-black text-orange-400 flex items-center justify-center gap-1">
-                              {maxStreak} <Flame className="w-5 h-5 text-orange-500 inline fill-orange-500/20" />
-                            </span>
-                          </div>
-                        </div>
+                        if (hasSelected) {
+                          if (isThisCorrect) {
+                            btnStyle = "bg-emerald-950/40 border-emerald-500 text-emerald-200 shadow-md shadow-emerald-950/30";
+                          } else if (isThisSelected) {
+                            btnStyle = "bg-red-950/40 border-red-500 text-red-200 shadow-md shadow-red-950/30";
+                          } else {
+                            btnStyle = "bg-zinc-900/20 border-zinc-900 text-zinc-600 opacity-60";
+                          }
+                        }
 
-                        <button
-                          onClick={startNewGame}
-                          className="w-full bg-[#e8702a] hover:bg-[#d2611f] text-white font-semibold py-4 rounded-xl transition-all hover:scale-102 hover:shadow-lg hover:shadow-orange-500/20 active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+                        const isShaking = shakeButton === option;
+
+                        return (
+                          <motion.button
+                            key={option}
+                            onClick={() => handleOptionClick(option, idx)}
+                            disabled={hasSelected}
+                            whileHover={!hasSelected ? { scale: 1.01, boxShadow: "0 0 10px rgba(232,112,42,0.12)" } : {}}
+                            whileTap={!hasSelected ? { scale: 0.99 } : {}}
+                            animate={isShaking ? {
+                              x: [-5, 5, -5, 5, -3, 3, 0],
+                              transition: { duration: 0.4 }
+                            } : {}}
+                            className={`w-full p-3 rounded-xl border text-xs sm:text-sm text-left transition-all duration-150 flex items-center justify-between font-medium cursor-pointer ${btnStyle}`}
+                          >
+                            <span>{option}</span>
+                            {hasSelected && isThisCorrect && (
+                              <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 ml-2" />
+                            )}
+                            {hasSelected && isThisSelected && !isThisCorrect && (
+                              <XCircle className="w-4 h-4 text-red-400 shrink-0 ml-2" />
+                            )}
+                          </motion.button>
+                        );
+                      })}
+                    </div>
+
+                    {/* Feedback Status */}
+                    <div className="h-6 text-center text-xs font-mono mt-2">
+                      {selectedOption !== null && (
+                        <motion.span
+                          initial={{ opacity: 0, y: 5 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className={isCorrect ? "text-emerald-400 animate-pulse" : "text-red-400"}
                         >
-                          <RotateCcw className="w-4 h-4" />
-                          <span>{t.playAgain}</span>
-                        </button>
-                      </motion.div>
-                    )}
+                          {isCorrect ? t.correct : `${t.incorrect} ${currentQuestions[currentIdx].options[lang][currentQuestions[currentIdx].answerIndex]}`}
+                        </motion.span>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
 
-                    {/* 4. VICTORY / WIN SCREEN */}
-                    {gameStatus === 'victory' && (
-                      <motion.div
-                        key="victory"
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto py-8"
+                {/* 3. GAME OVER SCREEN */}
+                {gameStatus === 'gameover' && (
+                  <motion.div
+                    key="gameover"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto py-6"
+                  >
+                    <div className="relative mb-5">
+                      <div className="absolute inset-0 bg-red-500/10 rounded-full blur-3xl animate-pulse" />
+                      <XCircle className="w-16 h-16 text-red-500 relative z-10" />
+                    </div>
+
+                    <h4 className="text-xl sm:text-2xl font-semibold mb-2 tracking-tight">{t.gameOverTitle}</h4>
+                    <p className="text-zinc-400 text-xs sm:text-sm mb-6 leading-relaxed">
+                      {t.gameOverDesc}
+                    </p>
+
+                    {/* Score Summary Box */}
+                    <div className="w-full bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 mb-8 grid grid-cols-2 gap-4 font-mono">
+                      <div className="border-r border-zinc-800/80 pr-2">
+                        <span className="text-zinc-500 text-[10px] block uppercase tracking-wider">{t.totalScore}</span>
+                        <span className="text-2xl sm:text-3xl font-black text-white">{score}</span>
+                      </div>
+                      <div className="pl-2">
+                        <span className="text-zinc-500 text-[10px] block uppercase tracking-wider">{t.maxStreak}</span>
+                        <span className="text-2xl sm:text-3xl font-black text-orange-400 flex items-center justify-center gap-1">
+                          {maxStreak} <Flame className="w-5 h-5 text-orange-500 inline fill-orange-500/20" />
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2.5 w-full">
+                      <button
+                        onClick={startNewGame}
+                        className="w-full bg-[#e8702a] hover:bg-[#d2611f] text-white font-semibold py-3 rounded-xl transition-all hover:scale-102 hover:shadow-lg hover:shadow-orange-500/20 active:scale-98 cursor-pointer flex items-center justify-center gap-2"
                       >
-                        <div className="relative mb-6">
-                          <div className="absolute inset-0 bg-yellow-500/15 rounded-full blur-3xl animate-pulse" />
-                          <Trophy className="w-16 h-16 text-yellow-400 relative z-10 animate-bounce" />
-                        </div>
+                        <RotateCcw className="w-4 h-4" />
+                        <span>{t.btnPlayAgain}</span>
+                      </button>
 
-                        <h4 className="text-2xl font-semibold text-yellow-400 mb-2 tracking-tight">{t.victoryTitle}</h4>
-                        <p className="text-zinc-400 text-sm mb-6 leading-relaxed">
-                          {t.victorySubtitle}
-                        </p>
-
-                        {/* Score Summary Box */}
-                        <div className="w-full bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 mb-8 grid grid-cols-2 gap-4 font-mono">
-                          <div className="border-r border-zinc-800/80 pr-2">
-                            <span className="text-zinc-500 text-[10px] block uppercase tracking-wider">{t.totalScore}</span>
-                            <span className="text-3xl font-black text-white">{score}</span>
-                          </div>
-                          <div className="pl-2">
-                            <span className="text-zinc-500 text-[10px] block uppercase tracking-wider">{t.maxStreak}</span>
-                            <span className="text-3xl font-black text-orange-400 flex items-center justify-center gap-1">
-                              {maxStreak} <Flame className="w-5 h-5 text-orange-500 inline fill-orange-500/20" />
-                            </span>
-                          </div>
-                        </div>
-
+                      <div className="grid grid-cols-2 gap-2.5 w-full">
                         <button
-                          onClick={startNewGame}
-                          className="w-full bg-[#e8702a] hover:bg-[#d2611f] text-white font-semibold py-4 rounded-xl transition-all hover:scale-102 hover:shadow-lg hover:shadow-orange-500/20 active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+                          onClick={resetToMenu}
+                          className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-semibold py-3 rounded-xl transition-all hover:scale-102 border border-zinc-800 active:scale-98 cursor-pointer flex items-center justify-center gap-1.5 text-xs sm:text-sm"
                         >
-                          <RotateCcw className="w-4 h-4" />
-                          <span>{t.victoryButton}</span>
+                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <span>{t.btnGoMenu}</span>
                         </button>
-                      </motion.div>
-                    )}
-                  </>
+                        <button
+                          onClick={onClose}
+                          className="bg-zinc-950 hover:bg-zinc-900 text-orange-400 hover:text-orange-300 font-semibold py-3 rounded-xl transition-all hover:scale-102 border border-orange-500/20 active:scale-98 cursor-pointer flex items-center justify-center gap-1.5 text-xs sm:text-sm"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          <span>{t.btnGoLobby}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {/* 4. VICTORY / WIN SCREEN */}
+                {gameStatus === 'victory' && (
+                  <motion.div
+                    key="victory"
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="flex-1 flex flex-col items-center justify-center text-center max-w-md mx-auto py-6"
+                  >
+                    <div className="relative mb-5">
+                      <div className="absolute inset-0 bg-yellow-500/15 rounded-full blur-3xl animate-pulse" />
+                      <Trophy className="w-16 h-16 text-yellow-400 relative z-10 animate-bounce" />
+                    </div>
+
+                    <h4 className="text-xl sm:text-2xl font-semibold text-yellow-400 mb-2 tracking-tight">{t.victoryTitle}</h4>
+                    <p className="text-zinc-400 text-xs sm:text-sm mb-6 leading-relaxed">
+                      {t.victoryDesc}
+                    </p>
+
+                    {/* Score Summary Box */}
+                    <div className="w-full bg-zinc-900/60 border border-zinc-800 rounded-2xl p-5 mb-8 grid grid-cols-2 gap-4 font-mono">
+                      <div className="border-r border-zinc-800/80 pr-2">
+                        <span className="text-zinc-500 text-[10px] block uppercase tracking-wider">{t.totalScore}</span>
+                        <span className="text-2xl sm:text-3xl font-black text-white">{score}</span>
+                      </div>
+                      <div className="pl-2">
+                        <span className="text-zinc-500 text-[10px] block uppercase tracking-wider">{t.maxStreak}</span>
+                        <span className="text-2xl sm:text-3xl font-black text-orange-400 flex items-center justify-center gap-1">
+                          {maxStreak} <Flame className="w-5 h-5 text-orange-500 inline fill-orange-500/20" />
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-col gap-2.5 w-full">
+                      <button
+                        onClick={startNewGame}
+                        className="w-full bg-[#e8702a] hover:bg-[#d2611f] text-white font-semibold py-3 rounded-xl transition-all hover:scale-102 hover:shadow-lg hover:shadow-orange-500/20 active:scale-98 cursor-pointer flex items-center justify-center gap-2"
+                      >
+                        <RotateCcw className="w-4 h-4" />
+                        <span>{t.btnPlayAgain}</span>
+                      </button>
+
+                      <div className="grid grid-cols-2 gap-2.5 w-full">
+                        <button
+                          onClick={resetToMenu}
+                          className="bg-zinc-900 hover:bg-zinc-800 text-zinc-300 hover:text-white font-semibold py-3 rounded-xl transition-all hover:scale-102 border border-zinc-800 active:scale-98 cursor-pointer flex items-center justify-center gap-1.5 text-xs sm:text-sm"
+                        >
+                          <ArrowLeft className="w-3.5 h-3.5" />
+                          <span>{t.btnGoMenu}</span>
+                        </button>
+                        <button
+                          onClick={onClose}
+                          className="bg-zinc-950 hover:bg-zinc-900 text-orange-400 hover:text-orange-300 font-semibold py-3 rounded-xl transition-all hover:scale-102 border border-orange-500/20 active:scale-98 cursor-pointer flex items-center justify-center gap-1.5 text-xs sm:text-sm"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                          <span>{t.btnGoLobby}</span>
+                        </button>
+                      </div>
+                    </div>
+                  </motion.div>
                 )}
               </AnimatePresence>
             </div>

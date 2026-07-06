@@ -10,6 +10,8 @@ interface RevealLayerProps {
   cursorX: number;
   cursorY: number;
   spotlightRadius: number;
+  parallaxX?: number;
+  parallaxY?: number;
 }
 
 export function RevealLayer({
@@ -17,18 +19,21 @@ export function RevealLayer({
   cursorX,
   cursorY,
   spotlightRadius,
+  parallaxX = 0,
+  parallaxY = 0,
 }: RevealLayerProps) {
   const isCursorActive = cursorX !== -999 && cursorY !== -999;
 
   const maskStyle: CSSProperties = isCursorActive
     ? {
         backgroundImage: `url(${image})`,
-        WebkitMaskImage: `radial-gradient(circle ${spotlightRadius}px at ${cursorX}px ${cursorY}px, rgba(0,0,0,1) 0, rgba(0,0,0,1) 40%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.4) 75%, rgba(0,0,0,0.12) 88%, rgba(0,0,0,0) 100%)`,
-        maskImage: `radial-gradient(circle ${spotlightRadius}px at ${cursorX}px ${cursorY}px, rgba(0,0,0,1) 0, rgba(0,0,0,1) 40%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.4) 75%, rgba(0,0,0,0.12) 88%, rgba(0,0,0,0) 100%)`,
+        WebkitMaskImage: `radial-gradient(circle ${spotlightRadius}px at ${cursorX - parallaxX}px ${cursorY - parallaxY}px, rgba(0,0,0,1) 0, rgba(0,0,0,1) 40%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.4) 75%, rgba(0,0,0,0.12) 88%, rgba(0,0,0,0) 100%)`,
+        maskImage: `radial-gradient(circle ${spotlightRadius}px at ${cursorX - parallaxX}px ${cursorY - parallaxY}px, rgba(0,0,0,1) 0, rgba(0,0,0,1) 40%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.4) 75%, rgba(0,0,0,0.12) 88%, rgba(0,0,0,0) 100%)`,
         WebkitMaskSize: '100% 100%',
         maskSize: '100% 100%',
         WebkitMaskRepeat: 'no-repeat',
         maskRepeat: 'no-repeat',
+        transform: `translate(${parallaxX}px, ${parallaxY}px) scale(1.05)`,
       }
     : {
         backgroundImage: `url(${image})`,

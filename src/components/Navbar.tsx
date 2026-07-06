@@ -24,10 +24,16 @@ export function Navbar({ onSignUpClick, onTabChange }: NavbarProps) {
     { id: 'Tour', label: 'Live Tour' },
     { id: 'Idol', label: '🤖 My Idol' },
     { id: 'Game', label: '🎮 Anime Guesser' },
+    { id: 'Typashi', label: '🏎️ Typashi' },
+    { id: 'Typeracer', label: '⌨️ Typeracer' },
   ];
 
   const handleTabClick = (tabId: string) => {
-    if (tabId === 'Idol' || tabId === 'Game') {
+    if (tabId === 'Typeracer') {
+      window.open('https://irmuun-togloom.vercel.app/', '_blank', 'noopener,noreferrer');
+      return;
+    }
+    if (tabId === 'Idol' || tabId === 'Game' || tabId === 'Typashi') {
       if (onTabChange) {
         onTabChange(tabId);
       }
