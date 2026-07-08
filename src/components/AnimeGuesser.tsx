@@ -210,8 +210,53 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [shakeButton, setShakeButton] = useState<string | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [unlockedHintsCount, setUnlockedHintsCount] = useState<number>(0);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Reset hints whenever the question index changes
+  useEffect(() => {
+    setUnlockedHintsCount(0);
+  }, [currentIdx]);
+
+  // Unique emoji helper mapping for Anime Guesser questions
+  const getQuestionEmojis = (id: number): string => {
+    const emojiMap: Record<number, string> = {
+      1: "🏴‍☠️👒🍖 (Straw Hat pirates, seas, treasure)",
+      2: "📓🍎✍️💀 (Death book, apple, shinigami)",
+      3: "🍥🐸⚡🥋 (Scrolls, toad, ramen bowl)",
+      4: "⚔️🐗⚡🎋 (Nezuko bamboo, demon horns, slashes)",
+      5: "🐉🐷⛩️🏮 (Spirit bathhouse, dragon river, soot)",
+      6: "🤞🧿👹🐼 (Cursed fingers, domain expansion, blindfold)",
+      7: "👊🦲🦸👔 (Red gloves, shiny bald head, one hit)",
+      8: "🧱🧗🥩🩸 (Giant wall, steam, flesh titan)",
+      9: "🐉🐉🐵☄️ (Senzu bean, monkey tail, energy blast)",
+      10: "🎣⚡🐜🎴 (Fishing rod, lightning, assassin cards)",
+      11: "🦾🤖⚙️⚗️ (Metal arm, automail, red elixir stone)",
+      12: "🦸🏫🥦💥 (Green hair, smash punches, academy heroes)",
+      13: "☕🎭🩸🥩 (Coffee mug, white mask, kagune wing)",
+      14: "🤖📐🧬😇 (Eva cockpit, angel halos, mech entry)",
+      15: "⚔️👘🍓💀 (Soul sword, hollow mask, strawberry name)",
+      
+      // Character Heroes mode
+      101: "🏴‍☠️👒🍖 (Gum-Gum captain, meat, red vest)",
+      102: "🍥🐸⚡ (Leaf village forehead protector, orange track jacket)",
+      103: "🎋⚔️🔥 (Checkered kimono, scar, water slashes)",
+      104: "🐉🐵☄️ (Orange Gi, spikey black hair, kamehameha)",
+      105: "🤞🧿👹 (Round sunglasses, infinite void, white hair)",
+      106: "👊🦲🦸 (Yellow spandex, bald superhero, grocery bag)",
+      107: "⚡🔌🛹 (Silver hair, lightning speed, assassin claws)",
+      108: "⚔️🧱💚 (調査兵団, dual swords, high speed ODM gear)",
+      109: "🍓👘💀 (Giant broadsword, orange hair, spiritual energy)",
+      110: "🎭☕👁️ (One-eyed red eye, black hair, ghoul mask)",
+      111: "🦾⚙️⚗️ (Red coat, mechanical arm, pocket watch)",
+      112: "🥦🥦💥 (Green curly hair, metal mouth guard, dynamic kicks)",
+      113: "🎋🎀🌸 (Pink kimono, bamboo muzzle, cute demon form)",
+      114: "⚔️⚔️⚔️ (Three katanas, green haramaki, bandana)",
+      115: "⚡👁️💜 (Purple lightning, Sharingan, dark hair)"
+    };
+    return emojiMap[id] || "🎮🔮✨ (Anime mystery box)";
+  };
 
   const t = UI_TEXT[lang];
 
@@ -859,11 +904,77 @@ export function AnimeGuesser({ isOpen, onClose }: AnimeGuesserProps) {
                         </AnimatePresence>
                       </div>
 
-                      {/* Help/Hint Indicator */}
-                      {currentQuestions[currentIdx].hint && selectedOption === null && (
-                        <div className="flex items-center justify-center gap-1 text-[10px] sm:text-[11px] text-zinc-500 font-mono mt-2">
-                          <HelpCircle className="w-3.5 h-3.5 text-zinc-600 animate-pulse" />
-                          <span>{t.hint}: {currentQuestions[currentIdx].hint[lang]}</span>
+                      {/* Interactive 3-Hint Panel */}
+                      {selectedOption === null && (
+                        <div className="mt-3 bg-zinc-900/30 rounded-2xl p-3 border border-zinc-900/60 font-mono text-[11px] space-y-2.5">
+                          <div className="flex items-center justify-between">
+                            <span className="text-zinc-500 uppercase tracking-widest text-[9px] font-bold flex items-center gap-1">
+                              <HelpCircle className="w-3.5 h-3.5 text-orange-400" />
+                              HINTS USED: {unlockedHintsCount} / 3
+                            </span>
+
+                            {unlockedHintsCount < 3 && (
+                              <button
+                                onClick={() => {
+                                  setUnlockedHintsCount(prev => Math.min(3, prev + 1));
+                                  playSound('ding');
+                                }}
+                                className="bg-orange-500 hover:bg-orange-600 text-white font-bold px-2.5 py-1 rounded-lg text-[9px] transition-all hover:scale-[1.02] cursor-pointer"
+                              >
+                                💡 UNLOCK HINT {unlockedHintsCount + 1}
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Progress pills */}
+                          <div className="grid grid-cols-3 gap-1.5">
+                            {[1, 2, 3].map((num) => (
+                              <div
+                                key={num}
+                                className={`h-1.5 rounded-full transition-all duration-300 ${
+                                  unlockedHintsCount >= num 
+                                    ? 'bg-gradient-to-r from-orange-500 to-amber-500' 
+                                    : 'bg-zinc-800'
+                                }`}
+                              />
+                            ))}
+                          </div>
+
+                          {/* Clue Output Area */}
+                          {unlockedHintsCount === 0 ? (
+                            <p className="text-center text-zinc-500 text-[10px] py-1">
+                              Stuck? Unlock hints step-by-step using the lightbulb button above!
+                            </p>
+                          ) : (
+                            <div className="space-y-1 text-zinc-300">
+                              {unlockedHintsCount >= 1 && (
+                                <div className="p-1.5 bg-zinc-950/40 rounded border border-zinc-900 flex gap-2 items-start">
+                                  <span className="text-orange-400 font-bold shrink-0">H1 (Emoji):</span>
+                                  <span className="text-white text-xs">{getQuestionEmojis(currentQuestions[currentIdx].id)}</span>
+                                </div>
+                              )}
+                              {unlockedHintsCount >= 2 && currentQuestions[currentIdx].hint && (
+                                <div className="p-1.5 bg-zinc-950/40 rounded border border-zinc-900 flex gap-2 items-start">
+                                  <span className="text-orange-400 font-bold shrink-0">H2 (Lore):</span>
+                                  <span>{currentQuestions[currentIdx].hint[lang]}</span>
+                                </div>
+                              )}
+                              {unlockedHintsCount >= 3 && (
+                                <div className="p-1.5 bg-zinc-950/40 rounded border border-zinc-900 flex gap-2 items-start animate-pulse">
+                                  <span className="text-emerald-400 font-bold shrink-0">H3 (Assist):</span>
+                                  <span className="text-emerald-300 font-semibold">
+                                    The correct choice starts with the character: "
+                                    {
+                                      currentQuestions[currentIdx].options[lang][
+                                        currentQuestions[currentIdx].answerIndex
+                                      ]?.trim().charAt(0).toUpperCase()
+                                    }
+                                    "
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>

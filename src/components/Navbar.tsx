@@ -4,15 +4,18 @@
  */
 
 import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Globe, Sparkles } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 interface NavbarProps {
   onSignUpClick?: () => void;
   onTabChange?: (tabId: string) => void;
+  userProfile?: { name: string; email: string } | null;
+  currentLang?: 'en' | 'mn';
+  onLangToggle?: () => void;
 }
 
-export function Navbar({ onSignUpClick, onTabChange }: NavbarProps) {
+export function Navbar({ onSignUpClick, onTabChange, userProfile, currentLang = 'en', onLangToggle }: NavbarProps) {
   const [activeTab, setActiveTab] = useState<string>('Course');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
 
@@ -25,15 +28,26 @@ export function Navbar({ onSignUpClick, onTabChange }: NavbarProps) {
     { id: 'Idol', label: '🤖 My Idol' },
     { id: 'Game', label: '🎮 Anime Guesser' },
     { id: 'Typashi', label: '🏎️ Typashi' },
+    { id: 'Quiz', label: '🔬 Geology Quiz' },
     { id: 'Typeracer', label: '⌨️ Typeracer' },
   ];
 
   const handleTabClick = (tabId: string) => {
     if (tabId === 'Typeracer') {
+      if (!userProfile) {
+        alert('You must sign up with a nickname and email to play Typeracer!');
+        if (onSignUpClick) onSignUpClick();
+        return;
+      }
       window.open('https://irmuun-togloom.vercel.app/', '_blank', 'noopener,noreferrer');
       return;
     }
-    if (tabId === 'Idol' || tabId === 'Game' || tabId === 'Typashi') {
+    if (tabId === 'Idol' || tabId === 'Game' || tabId === 'Typashi' || tabId === 'Quiz') {
+      if (!userProfile) {
+        alert(`You must sign up with a nickname and email to access ${tabId === 'Idol' ? 'My Idol' : tabId}!`);
+        if (onSignUpClick) onSignUpClick();
+        return;
+      }
       if (onTabChange) {
         onTabChange(tabId);
       }
@@ -92,13 +106,42 @@ export function Navbar({ onSignUpClick, onTabChange }: NavbarProps) {
         </div>
 
         {/* Right Action Button (desktop) */}
-        <div className="hidden md:block z-[110]">
-          <button
-            onClick={onSignUpClick}
-            className="bg-white text-gray-900 text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 hover:bg-gray-100 hover:scale-[1.03] active:scale-95 shadow-sm"
+        <div className="hidden md:flex items-center gap-3 z-[110]">
+          {onLangToggle && (
+            <button
+              onClick={onLangToggle}
+              className="bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold px-4.5 py-2.5 rounded-full transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-sm select-none"
+              title="Toggle language / Хэл солих"
+            >
+              <Globe className="w-3.5 h-3.5 text-[#e8702a]" />
+              <span className="font-mono uppercase text-xs">{currentLang === 'en' ? 'EN' : 'МН'}</span>
+            </button>
+          )}
+
+          <a
+            href="https://aistudio.google.com/apps/4bb9f5d8-c40e-4f7e-abe7-89f3e795c9e9?showPreview=true&showAssistant=true"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold px-4.5 py-2.5 rounded-full transition-all duration-300 flex items-center gap-1.5 cursor-pointer shadow-sm select-none"
+            title="Open AI Studio Workspace"
           >
-            Sign Up
-          </button>
+            <Sparkles className="w-3.5 h-3.5 text-[#e8702a] animate-pulse" />
+            <span className="font-mono uppercase text-xs">AI Studio</span>
+          </a>
+
+          {userProfile ? (
+            <div className="bg-white/10 backdrop-blur-md border border-white/20 text-white text-sm font-semibold px-5 py-2.5 rounded-full flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="font-mono text-xs text-white/90">{userProfile.name}</span>
+            </div>
+          ) : (
+            <button
+              onClick={onSignUpClick}
+              className="bg-white text-gray-900 text-sm font-semibold px-6 py-2.5 rounded-full transition-all duration-300 hover:bg-gray-100 hover:scale-[1.03] active:scale-95 shadow-sm cursor-pointer"
+            >
+              Sign Up
+            </button>
+          )}
         </div>
 
         {/* Mobile Hamburger Trigger */}
@@ -158,18 +201,51 @@ export function Navbar({ onSignUpClick, onTabChange }: NavbarProps) {
                 className="h-px bg-white/10 my-4"
               />
 
-              <motion.button
-                initial={{ opacity: 0, y: 15 }}
+              {onLangToggle && (
+                <motion.button
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.32 }}
+                  onClick={onLangToggle}
+                  className="w-full bg-white/5 hover:bg-white/10 border border-white/10 text-white text-center text-sm font-semibold py-3.5 rounded-full flex items-center justify-center gap-2 cursor-pointer transition-all"
+                >
+                  <Globe className="w-4 h-4 text-[#e8702a]" />
+                  <span>Language: {currentLang === 'en' ? 'ENGLISH' : 'МОНГОЛ ХЭЛ'}</span>
+                </motion.button>
+              )}
+
+              <motion.a
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.35 }}
-                onClick={() => {
-                  if (onSignUpClick) onSignUpClick();
-                  setIsMobileMenuOpen(false);
-                }}
-                className="w-full bg-[#e8702a] hover:bg-[#d2611f] text-white text-center text-base font-semibold py-4 rounded-full transition-all"
+                transition={{ delay: 0.34 }}
+                href="https://aistudio.google.com/apps/4bb9f5d8-c40e-4f7e-abe7-89f3e795c9e9?showPreview=true&showAssistant=true"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full bg-[#e8702a]/10 hover:bg-[#e8702a]/20 border border-[#e8702a]/30 text-white text-center text-sm font-semibold py-3.5 rounded-full flex items-center justify-center gap-2 cursor-pointer transition-all"
+                onClick={() => setIsMobileMenuOpen(false)}
               >
-                Sign Up
-              </motion.button>
+                <Sparkles className="w-4 h-4 text-[#e8702a] animate-pulse" />
+                <span>AI Studio App</span>
+              </motion.a>
+
+              {userProfile ? (
+                <div className="bg-white/10 border border-white/10 text-white text-center text-sm font-medium py-4 rounded-full font-mono">
+                  Signed in as <span className="text-[#e8702a] font-bold">{userProfile.name}</span>
+                </div>
+              ) : (
+                <motion.button
+                  initial={{ opacity: 0, y: 15 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.35 }}
+                  onClick={() => {
+                    if (onSignUpClick) onSignUpClick();
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="w-full bg-[#e8702a] hover:bg-[#d2611f] text-white text-center text-base font-semibold py-4 rounded-full transition-all cursor-pointer"
+                >
+                  Sign Up
+                </motion.button>
+              )}
             </div>
           </motion.div>
         )}

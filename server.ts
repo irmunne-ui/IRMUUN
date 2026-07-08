@@ -124,6 +124,189 @@ async function startServer() {
     }
   });
 
+  app.post("/api/quiz", async (req, res) => {
+    try {
+      const { lang } = req.body;
+      const ai = getGenAI();
+      const prompt = `Generate exactly 5 fun, educational multiple choice geology questions in ${lang === "mn" ? "Mongolian" : "English"} about these specific topics:
+1. Lithosphere layers (crust/Holocene stratum, columnar basalt, quartzite granites, mantle peridotite base).
+2. Universal depth/scale facts (Mariana Trench depth, Venus high heat melting lead, extreme neutron star density, blood iron star origins, ocean dissolved gold).
+
+Each question must be distinct. Provide 4 options, a 0-indexed answerIndex of the correct answer, and a helpful educational hint.
+Respond strictly with a JSON array matching this structure, without any markdown formatting or wrapper:
+[
+  {
+    "question": "string",
+    "options": ["string", "string", "string", "string"],
+    "answerIndex": number,
+    "hint": "string"
+  }
+]`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          temperature: 0.85,
+        }
+      });
+
+      const text = response.text;
+      if (!text) {
+        throw new Error("Empty response from Gemini API");
+      }
+      const questions = JSON.parse(text);
+      res.json({ questions });
+    } catch (err: any) {
+      console.warn("Falling back to pre-defined quiz questions:", err.message);
+      const lang = req.body.lang || "en";
+      const fallbackQuestions = lang === "mn" ? [
+        {
+          question: "Голоцений хурдас давхарга (0-50м гүн) голчлон юунаас бүрддэг вэ?",
+          options: ["Пироксен ба Оливин", "Элсэн чулуу ба Органик хөрс", "Кварцит боржин", "Төмөр ба Никель"],
+          answerIndex: 1,
+          hint: "Энэ нь газрын гадаргуутай хамгийн ойр орших давхарга юм."
+        },
+        {
+          question: "Багана хэлбэртэй базальт чулуулаг хэрхэн үүсдэг вэ?",
+          options: ["Тектоникийн асар их даралтаас", "Галт уулын халуун хайлмал лаав аажим хөрч агшсанаас", "Далайн гүний хурдас хуримтлагдсанаас", "Сонир унах үед"],
+          answerIndex: 1,
+          hint: "Лаав аажим хөрч, бие бие рүүгээ агшихдаа зургаан өнцөгт цууралтуудыг үүсгэдэг."
+        },
+        {
+          question: "Дэлхийн царцдасыг манти руу шилжих хил заагийг юу гэж нэрлэдэг вэ?",
+          options: ["Марианы суваг", "Мохогийн зааг (Mohorovičić)", "Литосферийн суурь", "Тектоник ангал"],
+          answerIndex: 1,
+          hint: "Үүнийг Хорватын сейсмологич Андрия Мохоровичичийн нэрээр нэрлэсэн."
+        },
+        {
+          question: "Хүний цусан дахь төмөр анх хаана үүссэн бэ?",
+          options: ["Дэлхийн гүнд", "Аварга одод болон суперновагийн дэлбэрэлтийн гүнд", "Далайн ёроолд", "Нүүрсний уурхайд"],
+          answerIndex: 1,
+          hint: "Энэ нь олон тэрбум жилийн өмнөх ододын мөхлийн явцад үүссэн сансрын элемент юм."
+        },
+        {
+          question: "Дэлхийн хамгийн гүн Марианы ангалд бүх уулсыг живүүлвэл Эверестийн орой усан дор хэр гүн үлдэх вэ?",
+          options: ["Ойролцоогоор 2 км усан дор", "Уснаас ил гарна", "100 метр усан дор", "500 метр усан дор"],
+          answerIndex: 0,
+          hint: "Марианы суваг нь бараг 11,000 метр гүн бөгөөд Эверест нь 8,848 метр өндөр юм."
+        }
+      ] : [
+        {
+          question: "What is the primary composition of the Holocene stratum (0-50m depth)?",
+          options: ["Pyroxene & Olivine", "Soil, Sandstone & Organic Humus", "Quartzite Granite", "Peridotite & Pyrope"],
+          answerIndex: 1,
+          hint: "It represents the most recent geological era close to the soil surface."
+        },
+        {
+          question: "How do Columnar Basalt structures form?",
+          options: ["Under intense tectonic folding and pressure", "From slow cooling and contraction of thick basaltic lava flows", "By accumulated ocean sediment sedimentation", "Through meteor impacts"],
+          answerIndex: 1,
+          hint: "As lava cools slowly, it contracts and cracks into hexagonal columns."
+        },
+        {
+          question: "What is the geological boundary between the Earth's crust and the mantle called?",
+          options: ["Mariana Discontinuity", "Mohorovičić Discontinuity (Moho)", "Lithosphere Base", "Tectonic Crevasse"],
+          answerIndex: 1,
+          hint: "It is named after the Croatian seismologist who discovered it in 1909."
+        },
+        {
+          question: "Where was the iron in human blood originally forged?",
+          options: ["Inside the Earth's core", "Inside dying giant stars and supernova explosions", "Deep within the ocean hydrothermals", "From early terrestrial vegetation"],
+          answerIndex: 1,
+          hint: "It is a cosmic element created billions of years ago during stellar nucleosynthesis."
+        },
+        {
+          question: "If Mount Everest were placed inside the Mariana Trench, how much water would still cover its peak?",
+          options: ["Around 2 kilometers of water", "None, it would stick out", "Exactly 100 meters", "About 500 meters"],
+          answerIndex: 0,
+          hint: "The Mariana Trench is about 11,000m deep, whereas Everest is 8,848m high."
+        }
+      ];
+      res.json({ questions: fallbackQuestions });
+    }
+  });
+
+  app.post("/api/fact", async (req, res) => {
+    try {
+      const { lang } = req.body;
+      const ai = getGenAI();
+      const prompt = `Generate a unique, fascinating, and mind-blowing fact about geology, Earth sciences, plate tectonics, or deep physical science in ${lang === "mn" ? "Mongolian" : "English"}.
+Respond strictly with a JSON object matching this structure, without any markdown formatting or wrapper:
+{
+  "topic": "string (short category, e.g. 'Stellar Geochemistry', 'Core Seismology', 'Tectonic Marvels')",
+  "fact": "string (the main mind-blowing fact)",
+  "explanation": "string (1-2 sentences expanding on the science)"
+}`;
+
+      const response = await ai.models.generateContent({
+        model: "gemini-3.5-flash",
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          temperature: 0.95,
+        }
+      });
+
+      const text = response.text;
+      if (!text) {
+        throw new Error("Empty response from Gemini API");
+      }
+      const factData = JSON.parse(text);
+      res.json({ success: true, fact: factData });
+    } catch (err: any) {
+      console.warn("Falling back to pre-defined science facts:", err.message);
+      const lang = req.body.lang || "en";
+      const fallbackFacts = lang === "mn" ? [
+        {
+          topic: "Одон орны хими",
+          fact: "Дэлхий дээрх бүх алт, платинум нь 3.9 тэрбум жилийн өмнөх солирын асар том мөргөлдөөний үр дүнд сансраас ирсэн байна.",
+          explanation: "Дэлхий үүсэх анхны шатанд байсан алт нь хайлмал төмөр цөм рүүгээ живсэн бөгөөд өнөөдөр бидний олборлож буй алт нь сүүлд унасан солируудоос гаралтай."
+        },
+        {
+          topic: "Гүн геофизик",
+          fact: "Дэлхийн төв цөм нь Нарны гадаргуугаас ч халуун бөгөөд бараг 6,000 Цельсийн хэмд хүрдэг.",
+          explanation: "Энэхүү асар их халууныг цацраг идэвхт изотопуудын задрал болон манай гараг анх таталцлын хүчээр үүсэх үед хуримтлагдсан үлдэгдэл дулаан хадгалж байдаг."
+        },
+        {
+          topic: "Тектоник гайхамшиг",
+          fact: "Исланд улс нь Хойд Америк болон Евразийн тектоник хавтангуудын зааг дээр оршдог тул жилд ойролцоогоор 2.5 см-ээр тэлж байдаг.",
+          explanation: "Тус улсын дундуур дайран өнгөрөх Атлантын далайн гол нуруу нь шинэ царцдасыг байнга шахаж гаргадаг тул Исланд хуурай газар дээр хавтангийн тэлэлтийг харж болох цорын ганц газар юм."
+        },
+        {
+          topic: "Эртний палеонтологи",
+          fact: "Дэлхий дээрх анхны амьд биетүүд болох строматолитууд одоо ч Ирландын болон Баруун Австралийн давст нууруудад амьдарсаар байна.",
+          explanation: "Эдгээр бичил биетүүд нь 3.5 тэрбум жилийн өмнө үүссэн бөгөөд фотосинтезийн тусламжтайгаар дэлхийн анхны хүчилтөрөгчийн мандлыг бүрдүүлсэн түүхтэй."
+        }
+      ] : [
+        {
+          topic: "Stellar Geochemistry",
+          fact: "All the gold and platinum on Earth arrived via meteorites during a massive cataclysm 3.9 billion years ago.",
+          explanation: "The Earth's original gold sank into the liquid iron core during formation. The crustal gold we mine today was deposited by subsequent asteroid impacts."
+        },
+        {
+          topic: "Core Seismology",
+          fact: "Earth's solid inner core is growing by about 1 millimeter in radius every year as the liquid outer core cools and solidifies.",
+          explanation: "This crystallization release latent heat, which drives the convection currents in the outer liquid core, maintaining our planetary magnetic field."
+        },
+        {
+          topic: "Tectonic Expansion",
+          fact: "Iceland is splitting in half as the North American and Eurasian tectonic plates pull apart at a rate of 2.5 centimeters per year.",
+          explanation: "The Mid-Atlantic Ridge runs directly through the island, making it one of the few places on Earth where a divergent plate boundary is visible on land."
+        },
+        {
+          topic: "Deep Seafloor Volcanism",
+          fact: "The largest single volcano on Earth, Tamu Massif, lies entirely submerged beneath the Pacific Ocean.",
+          explanation: "Covering an area equivalent to the British Isles, this shield volcano erupted 145 million years ago and reaches a footprint of over 300,000 square kilometers."
+        }
+      ];
+      // Pick a random fact from fallback list
+      const randomFact = fallbackFacts[Math.floor(Math.random() * fallbackFacts.length)];
+      res.json({ success: true, fact: randomFact });
+    }
+  });
+
   // Health endpoint
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });

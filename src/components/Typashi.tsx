@@ -21,6 +21,15 @@ import {
 interface TypashiProps {
   isOpen: boolean;
   onClose: () => void;
+  userProfile?: { name: string; email: string } | null;
+}
+
+interface LeaderboardRecord {
+  name: string;
+  wpm: number;
+  accuracy: number;
+  vehicle: string;
+  date: string;
 }
 
 interface TypingHistory {
@@ -52,7 +61,7 @@ const TYPING_TEXTS = {
   ]
 };
 
-export function Typashi({ isOpen, onClose }: TypashiProps) {
+export function Typashi({ isOpen, onClose, userProfile }: TypashiProps) {
   const [lang, setLang] = useState<'mn' | 'en'>('mn');
   const [vehicle, setVehicle] = useState<'car' | 'rocket' | 'horse'>('car');
   
@@ -70,12 +79,22 @@ export function Typashi({ isOpen, onClose }: TypashiProps) {
   
   // Leaderboard / Local History state
   const [history, setHistory] = useState<TypingHistory[]>([]);
+  const [lobbyTab, setLobbyTab] = useState<'leaderboard' | 'history'>('leaderboard');
+  const [leaderboard, setLeaderboard] = useState<LeaderboardRecord[]>([]);
+
+  const SEED_LEADERBOARD: LeaderboardRecord[] = [
+    { name: 'MagmaRacer', wpm: 76, accuracy: 98, vehicle: 'car', date: '2026-07-06' },
+    { name: 'LithoSpeed', wpm: 68, accuracy: 96, vehicle: 'rocket', date: '2026-07-06' },
+    { name: 'PlateDrifter', wpm: 59, accuracy: 95, vehicle: 'horse', date: '2026-07-07' },
+    { name: 'CrustCrusher', wpm: 52, accuracy: 92, vehicle: 'car', date: '2026-07-07' },
+    { name: 'BasaltRunner', wpm: 44, accuracy: 91, vehicle: 'horse', date: '2026-07-07' }
+  ];
   
   // Audio context reference
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
 
-  // Load History from localStorage on mount
+  // Load History & Leaderboard from localStorage on mount
   useEffect(() => {
     const saved = localStorage.getItem('typashi_history');
     if (saved) {
@@ -84,6 +103,18 @@ export function Typashi({ isOpen, onClose }: TypashiProps) {
       } catch (e) {
         console.error('Failed to parse Typashi history:', e);
       }
+    }
+
+    const savedLeaders = localStorage.getItem('typashi_leaderboard');
+    if (savedLeaders) {
+      try {
+        setLeaderboard(JSON.parse(savedLeaders));
+      } catch (e) {
+        setLeaderboard(SEED_LEADERBOARD);
+      }
+    } else {
+      setLeaderboard(SEED_LEADERBOARD);
+      localStorage.setItem('typashi_leaderboard', JSON.stringify(SEED_LEADERBOARD));
     }
   }, []);
 
@@ -248,6 +279,37 @@ export function Typashi({ isOpen, onClose }: TypashiProps) {
     const updatedHistory = [newRecord, ...history].slice(0, 15);
     setHistory(updatedHistory);
     localStorage.setItem('typashi_history', JSON.stringify(updatedHistory));
+
+    // Update global competitive leaderboard
+    const userNickname = userProfile?.name || 'Authorized Geologist';
+    const savedLeaders = localStorage.getItem('typashi_leaderboard');
+    let currentLeaders: LeaderboardRecord[] = savedLeaders ? JSON.parse(savedLeaders) : SEED_LEADERBOARD;
+
+    const existingUserIdx = currentLeaders.findIndex((item: LeaderboardRecord) => item.name.toLowerCase() === userNickname.toLowerCase());
+    if (existingUserIdx !== -1) {
+      if (finalWPM > currentLeaders[existingUserIdx].wpm) {
+        currentLeaders[existingUserIdx] = {
+          name: userNickname,
+          wpm: finalWPM,
+          accuracy: finalAccuracy,
+          vehicle: vehicle,
+          date: new Date().toLocaleDateString()
+        };
+      }
+    } else {
+      currentLeaders.push({
+        name: userNickname,
+        wpm: finalWPM,
+        accuracy: finalAccuracy,
+        vehicle: vehicle,
+        date: new Date().toLocaleDateString()
+      });
+    }
+
+    currentLeaders.sort((a: LeaderboardRecord, b: LeaderboardRecord) => b.wpm - a.wpm);
+    const trimmedLeaders = currentLeaders.slice(0, 10);
+    setLeaderboard(trimmedLeaders);
+    localStorage.setItem('typashi_leaderboard', JSON.stringify(trimmedLeaders));
     
     setElapsedTime(durationSeconds);
     setGameState('results');
@@ -450,41 +512,110 @@ export function Typashi({ isOpen, onClose }: TypashiProps) {
 
                       {/* Leaderboard / Run History: 5 cols */}
                       <div className="md:col-span-5 bg-zinc-900/30 border border-zinc-900 rounded-2xl p-4 flex flex-col h-[350px]">
-                        <span className="text-xs font-bold uppercase tracking-wider text-emerald-400 flex items-center gap-1.5 border-b border-zinc-800 pb-2 mb-3">
-                          <Trophy className="w-4 h-4 text-amber-400" /> Миний Амжилтууд
-                        </span>
+                        {/* Interactive Tab Switcher */}
+                        <div className="flex bg-zinc-950 p-1 rounded-xl border border-zinc-900 mb-3 select-none">
+                          <button
+                            onClick={() => setLobbyTab('leaderboard')}
+                            className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                              lobbyTab === 'leaderboard'
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm'
+                                : 'text-zinc-500 hover:text-white'
+                            }`}
+                          >
+                            <Trophy className="w-3.5 h-3.5" />
+                            <span>Шилдэгүүд</span>
+                          </button>
+                          <button
+                            onClick={() => setLobbyTab('history')}
+                            className={`flex-1 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                              lobbyTab === 'history'
+                                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shadow-sm'
+                                : 'text-zinc-500 hover:text-white'
+                            }`}
+                          >
+                            <Award className="w-3.5 h-3.5" />
+                            <span>Миний түүх</span>
+                          </button>
+                        </div>
 
-                        {history.length === 0 ? (
-                          <div className="flex-1 flex flex-col items-center justify-center text-center p-4 text-zinc-600 font-mono text-xs">
-                            <Award className="w-8 h-8 opacity-25 mb-2" />
-                            <p>Одоогоор уралдааны түүх байхгүй байна. Анхны уралдаанаа эхлүүлээрэй!</p>
+                        {lobbyTab === 'leaderboard' ? (
+                          <div className="flex-1 overflow-y-auto space-y-1.5 pr-1 custom-scrollbar text-xs font-mono">
+                            {leaderboard.length === 0 ? (
+                              <div className="flex-1 flex flex-col items-center justify-center text-center p-4 text-zinc-600 font-mono text-xs">
+                                <Trophy className="w-8 h-8 opacity-25 mb-2" />
+                                <p>Одоогоор шилдэг амжилт байхгүй байна.</p>
+                              </div>
+                            ) : (
+                              leaderboard.map((entry, idx) => {
+                                const isCurrentUser = userProfile?.name && entry.name.toLowerCase() === userProfile.name.toLowerCase();
+                                return (
+                                  <div
+                                    key={idx}
+                                    className={`flex items-center justify-between p-2 rounded-xl border transition-all ${
+                                      isCurrentUser
+                                        ? 'bg-emerald-500/15 border-emerald-500/40 shadow-inner'
+                                        : 'bg-zinc-950/60 border-zinc-900'
+                                    }`}
+                                  >
+                                    <div className="flex items-center gap-2">
+                                      {/* Rank Badge */}
+                                      <span className="w-5 h-5 flex items-center justify-center font-bold rounded-md bg-zinc-900 border border-zinc-800 text-[10px]">
+                                        {idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : idx + 1}
+                                      </span>
+                                      <div>
+                                        <div className="flex items-center gap-1.5">
+                                          <span className={`font-bold ${isCurrentUser ? 'text-emerald-300' : 'text-white'}`}>
+                                            {entry.name}
+                                          </span>
+                                          {isCurrentUser && (
+                                            <span className="text-[7px] bg-emerald-500 text-black px-1.5 py-0.2 rounded font-sans font-bold">ТА</span>
+                                          )}
+                                        </div>
+                                        <span className="text-[9px] text-zinc-500 block">{entry.date}</span>
+                                      </div>
+                                    </div>
+                                    <div className="text-right">
+                                      <div className="text-emerald-400 font-bold">{entry.wpm} WPM</div>
+                                      <div className="text-[9px] text-zinc-400">{entry.accuracy}% зөв</div>
+                                    </div>
+                                  </div>
+                                );
+                              })
+                            )}
                           </div>
                         ) : (
-                          <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar text-xs font-mono">
-                            {history.slice(0, 5).map((entry, idx) => (
-                              <div
-                                key={idx}
-                                className="flex items-center justify-between p-2 rounded-xl bg-zinc-950/60 border border-zinc-900"
-                              >
-                                <div className="flex items-center gap-2">
-                                  <span className="text-lg">{getVehicleIcon(entry.vehicle as any, "w-6 h-6")}</span>
-                                  <div>
-                                    <div className="flex items-center gap-1.5">
-                                      <span className="text-white font-bold">{entry.wpm} WPM</span>
-                                      <span className="text-[9px] bg-zinc-900 text-zinc-400 px-1 py-0.2 rounded font-sans">
-                                        {entry.lang === 'mn' ? 'МН' : 'EN'}
-                                      </span>
+                          history.length === 0 ? (
+                            <div className="flex-1 flex flex-col items-center justify-center text-center p-4 text-zinc-600 font-mono text-xs">
+                              <Award className="w-8 h-8 opacity-25 mb-2" />
+                              <p>Одоогоор уралдааны түүх байхгүй байна. Анхны уралдаанаа эхлүүлээрэй!</p>
+                            </div>
+                          ) : (
+                            <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar text-xs font-mono">
+                              {history.slice(0, 5).map((entry, idx) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center justify-between p-2 rounded-xl bg-zinc-950/60 border border-zinc-900"
+                                >
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-lg">{getVehicleIcon(entry.vehicle as any, "w-6 h-6")}</span>
+                                    <div>
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="text-white font-bold">{entry.wpm} WPM</span>
+                                        <span className="text-[9px] bg-zinc-900 text-zinc-400 px-1 py-0.2 rounded font-sans">
+                                          {entry.lang === 'mn' ? 'МН' : 'EN'}
+                                        </span>
+                                      </div>
+                                      <span className="text-[9px] text-zinc-500 block">{entry.date}</span>
                                     </div>
-                                    <span className="text-[9px] text-zinc-500 block">{entry.date}</span>
+                                  </div>
+                                  <div className="text-right">
+                                    <div className="text-emerald-400 font-semibold">{entry.accuracy}% зөв</div>
+                                    <div className="text-[10px] text-red-400">{entry.errors} алдаа</div>
                                   </div>
                                 </div>
-                                <div className="text-right">
-                                  <div className="text-emerald-400 font-semibold">{entry.accuracy}% зөв</div>
-                                  <div className="text-[10px] text-red-400">{entry.errors} алдаа</div>
-                                </div>
-                              </div>
-                            ))}
-                          </div>
+                              ))}
+                            </div>
+                          )
                         )}
                       </div>
                     </div>
