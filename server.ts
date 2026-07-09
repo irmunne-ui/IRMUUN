@@ -13,9 +13,48 @@ function getGenAI(): GoogleGenAI {
     if (!key) {
       throw new Error("GEMINI_API_KEY environment variable is required");
     }
-    aiClient = new GoogleGenAI({ apiKey: key });
+    aiClient = new GoogleGenAI({
+      apiKey: key,
+      httpOptions: {
+        headers: {
+          "User-Agent": "aistudio-build",
+        },
+      },
+    });
   }
   return aiClient;
+}
+
+async function generateContentWithFallback(
+  ai: GoogleGenAI,
+  params: {
+    contents: any;
+    config?: any;
+    primaryModel?: string;
+    secondaryModel?: string;
+  }
+) {
+  const models = [
+    params.primaryModel || "gemini-3.5-flash",
+    params.secondaryModel || "gemini-3.1-flash-lite",
+    "gemini-2.5-flash"
+  ];
+
+  let lastError: any = null;
+  for (const model of models) {
+    try {
+      console.log(`Attempting generation with model: ${model}...`);
+      return await ai.models.generateContent({
+        model: model,
+        contents: params.contents,
+        config: params.config,
+      });
+    } catch (err: any) {
+      lastError = err;
+      console.warn(`Model (${model}) failed: ${err.message || err}. Trying next candidate in chain...`);
+    }
+  }
+  throw lastError || new Error("All fallback models in chain failed to generate content");
 }
 
 const IDOL_SYSTEM_PROMPT = `You are Cristiano Ronaldo (Penaldo), an AI version of the football idol acting as a friendly, motivational Idol Coach on this portfolio website.
@@ -103,8 +142,9 @@ async function startServer() {
         parts: [{ text: message }]
       });
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+      const response = await generateContentWithFallback(ai, {
+        primaryModel: "gemini-3.5-flash",
+        secondaryModel: "gemini-2.5-flash",
         contents: formattedContents,
         config: {
           systemInstruction: systemInstruction,
@@ -116,11 +156,52 @@ async function startServer() {
       const replyText = response.text || (botType === "idol" ? "Siuuu! Let's keep working hard!" : "Chill bro, I'm here to help!");
       res.json({ reply: replyText });
     } catch (err: any) {
-      console.error("Error in /api/chat:", err);
-      res.status(500).json({ 
-        error: err.message || "Failed to generate AI response",
-        reply: "Oops, my AI connection had a hiccup! Please try asking again in a second."
-      });
+      console.warn("Gemini Chat API failed, using robust offline-fallback engine:", err.message || err);
+      try {
+        const { botType, message } = req.body;
+        const msg = (message || "").toLowerCase();
+        let reply = "";
+
+        if (botType === "idol") {
+          if (msg.includes("hello") || msg.includes("hi") || msg.includes("hey") || msg.includes("hola")) {
+            reply = "Siuuu! Hello my friend! Ready to train hard and reach your dreams today? What can I tell you about the projects or my football journey?";
+          } else if (msg.includes("siuu") || msg.includes("siu")) {
+            reply = "SIUUUUUUU! That's what I am talking about! Power, dedication, and success! Believe in yourself, my friend!";
+          } else if (msg.includes("football") || msg.includes("soccer") || msg.includes("messi") || msg.includes("goat") || msg.includes("ronaldo") || msg.includes("ball")) {
+            reply = "Football is my life! I work hard every day to be the best. Together we are unstoppable, Siuuu!";
+          } else if (msg.includes("project") || msg.includes("website") || msg.includes("work") || msg.includes("code")) {
+            reply = "My friend irmuun built this amazing portfolio website! He has great passion for coding. You should check out his projects, they are top class!";
+          } else if (msg.includes("hobby") || msg.includes("hobbies") || msg.includes("free time")) {
+            reply = "I love training, scoring goals, and staying in perfect shape! What are your hobbies, my friend? Let me know!";
+          } else if (msg.includes("dream") || msg.includes("goal")) {
+            reply = "My dream is always to win, to score, and to inspire! Never give up on your dreams, SIUUU!";
+          } else if (msg.includes("advice") || msg.includes("coach") || msg.includes("motivate") || msg.includes("tips")) {
+            reply = "Believe in yourself, work while others sleep, and never stop pushing your limits. You can achieve anything! SIUUU!";
+          } else {
+            reply = "SIUUU! That is very interesting, my friend. Let's stay focused, stay motivated, and keep pushing forward! Ask me anything about the projects or football!";
+          }
+        } else {
+          if (msg.includes("hello") || msg.includes("hi") || msg.includes("hey") || msg.includes("yo")) {
+            reply = "Yo bro! What's up? Calm and chill here. Ask me anything you want about my projects or hobbies!";
+          } else if (msg.includes("project") || msg.includes("website") || msg.includes("work") || msg.includes("goy") || msg.includes("beautiful")) {
+            reply = "Sike, you like the website? I built this beautiful geological digging layer section ('goy heseg') and some other cool stuff. Let me know what you think!";
+          } else if (msg.includes("hobby") || msg.includes("hobbies") || msg.includes("volleyball") || msg.includes("phone")) {
+            reply = "Nibba, I love playing volleyball and chilling with my mobile phone. It's so relaxing and taivan.";
+          } else if (msg.includes("dream") || msg.includes("hacker") || msg.includes("future")) {
+            reply = "I really want to be a hacker and explore deep tech. Sike, it's my ultimate dream!";
+          } else if (msg.includes("zail") || msg.includes("nibba") || msg.includes("sike")) {
+            reply = "Haha, zail! You know the real slang! Sike, it's all chill and taivan here.";
+          } else if (msg.includes("digging") || msg.includes("dig") || msg.includes("geology") || msg.includes("lithosphere") || msg.includes("ruler")) {
+            reply = "Oh, that's the 'sonirholtoi heseg' (interesting geological section) with interactive lithosphere layers and our dynamic depth scale! Very cool and taivan.";
+          } else {
+            reply = "Taivan, bro! Sike, I'm just chilling here. Ask me about my hobbies, volleyball, or how I built this website!";
+          }
+        }
+
+        res.json({ reply });
+      } catch (fallbackErr) {
+        res.status(200).json({ reply: "Yo! Let's keep things chill and taivan. Sike, ask me anything!" });
+      }
     }
   });
 
@@ -143,8 +224,9 @@ Respond strictly with a JSON array matching this structure, without any markdown
   }
 ]`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+      const response = await generateContentWithFallback(ai, {
+        primaryModel: "gemini-3.5-flash",
+        secondaryModel: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",
@@ -240,8 +322,9 @@ Respond strictly with a JSON object matching this structure, without any markdow
   "explanation": "string (1-2 sentences expanding on the science)"
 }`;
 
-      const response = await ai.models.generateContent({
-        model: "gemini-3.5-flash",
+      const response = await generateContentWithFallback(ai, {
+        primaryModel: "gemini-3.5-flash",
+        secondaryModel: "gemini-2.5-flash",
         contents: prompt,
         config: {
           responseMimeType: "application/json",

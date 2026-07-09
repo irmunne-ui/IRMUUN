@@ -110,6 +110,48 @@ const modesConfig = {
   }
 };
 
+const rightStrata = [
+  { id: 'crust', labelEn: 'Holocene Stratum', labelMn: 'Голоцений Үе', height: 48, depthRange: [0, 15] },
+  { id: 'basalt', labelEn: 'Columnar Basalt', labelMn: 'Баганат Базальт', height: 56, depthRange: [15, 35] },
+  { id: 'metamorphic', labelEn: 'Quartzite Granites', labelMn: 'Кварцит Боржин', height: 52, depthRange: [35, 50] },
+  { id: 'mantle', labelEn: 'Peridotite Base', labelMn: 'Перидотитын Суурь', height: 64, depthRange: [50, 120] }
+];
+
+const earthTones = [
+  { // Crust (clay/sand)
+    start: 'rgba(212, 163, 115, 0.22)',
+    mid: 'rgba(163, 115, 64, 0.35)',
+    end: 'rgba(235, 189, 142, 0.22)',
+    border: '#d4a373',
+    glow: 'rgba(212, 163, 115, 0.45)',
+    glowPulse: 'rgba(212, 163, 115, 0.75)'
+  },
+  { // Basalt (slate/terracotta)
+    start: 'rgba(176, 125, 98, 0.22)',
+    mid: 'rgba(125, 76, 50, 0.35)',
+    end: 'rgba(201, 149, 122, 0.22)',
+    border: '#b07d62',
+    glow: 'rgba(176, 125, 98, 0.45)',
+    glowPulse: 'rgba(176, 125, 98, 0.75)'
+  },
+  { // Metamorphic (granite/quartz/copper)
+    start: 'rgba(156, 102, 68, 0.22)',
+    mid: 'rgba(102, 58, 30, 0.35)',
+    end: 'rgba(184, 128, 92, 0.22)',
+    border: '#9c6644',
+    glow: 'rgba(156, 102, 68, 0.45)',
+    glowPulse: 'rgba(156, 102, 68, 0.75)'
+  },
+  { // Mantle (peridotite/magma)
+    start: 'rgba(232, 112, 42, 0.22)',
+    mid: 'rgba(150, 50, 10, 0.35)',
+    end: 'rgba(255, 136, 61, 0.22)',
+    border: '#e8702a',
+    glow: 'rgba(232, 112, 42, 0.45)',
+    glowPulse: 'rgba(232, 112, 42, 0.75)'
+  }
+];
+
 export function MainHero() {
   const mouse = useRef({ x: -999, y: -999 });
   const smooth = useRef({ x: -999, y: -999 });
@@ -159,10 +201,86 @@ export function MainHero() {
   // New States for Custom Viewing Modes, Legend, and Fact of the Day
   const [showLegend, setShowLegend] = useState(true);
   const [viewingMode, setViewingMode] = useState<'default' | 'seismic' | 'oceanic'>('default');
-  const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | 'geology' | 'human' | 'space' | 'deepsea' | 'ocean'>('all');
+  const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | 'geology' | 'human' | 'space' | 'deepsea' | 'ocean' | 'bookmarks'>('all');
   const [visibleCount, setVisibleCount] = useState(12);
   const [factOfDay, setFactOfDay] = useState<{ topic: string; fact: string; explanation: string } | null>(null);
   const [isFactLoading, setIsFactLoading] = useState(false);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [lingeredStratum, setLingeredStratum] = useState<string | null>(null);
+  const [isStationary, setIsStationary] = useState(false);
+  const [isRulerHovered, setIsRulerHovered] = useState(false);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    const resetStationaryTimer = () => {
+      setIsStationary(false);
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        setIsStationary(true);
+      }, 2000);
+    };
+
+    window.addEventListener('mousemove', resetStationaryTimer);
+    window.addEventListener('touchmove', resetStationaryTimer, { passive: true });
+
+    // Initialize timer
+    timer = setTimeout(() => {
+      setIsStationary(true);
+    }, 2000);
+
+    return () => {
+      window.removeEventListener('mousemove', resetStationaryTimer);
+      window.removeEventListener('touchmove', resetStationaryTimer);
+      clearTimeout(timer);
+    };
+  }, []);
+
+  const [bookmarkedIds, setBookmarkedIds] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem('lithos_bookmarked_facts');
+      return saved ? JSON.parse(saved) : [];
+    } catch {
+      return [];
+    }
+  });
+
+  const [cursorColor, setCursorColor] = useState<'tectonic' | 'emerald' | 'magma' | 'abyssal' | 'cosmic' | 'aurora' | 'solar' | 'nebula' | 'neon_pink' | 'amber_gold' | 'deep_forest' | 'hyper_blue' | 'mint_fresh' | 'crystal_white' | 'obsidian_black' | 'bronze' | 'lavender' | 'iridescent_rainbow'>(() => {
+    try {
+      const saved = localStorage.getItem('lithos_cursor_color');
+      return (saved as any) || 'tectonic';
+    } catch {
+      return 'tectonic';
+    }
+  });
+
+  const [cursorShape, setCursorShape] = useState<'line' | 'dots' | 'ring' | 'crosshair' | 'triangle' | 'square' | 'star' | 'hexagon' | 'diamond' | 'swirl' | 'pulsing_radar' | 'brackets' | 'gear' | 'atom' | 'flower_of_life' | 'dna' | 'meteor_shower'>(() => {
+    try {
+      const saved = localStorage.getItem('lithos_cursor_shape');
+      return (saved as any) || 'line';
+    } catch {
+      return 'line';
+    }
+  });
+
+  useEffect(() => {
+    localStorage.setItem('lithos_bookmarked_facts', JSON.stringify(bookmarkedIds));
+  }, [bookmarkedIds]);
+
+  useEffect(() => {
+    localStorage.setItem('lithos_cursor_color', cursorColor);
+  }, [cursorColor]);
+
+  useEffect(() => {
+    localStorage.setItem('lithos_cursor_shape', cursorShape);
+  }, [cursorShape]);
+
+  const handleToggleBookmark = (id: string) => {
+    setBookmarkedIds(prev =>
+      prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+    );
+  };
 
   const fetchFactOfDay = async () => {
     setIsFactLoading(true);
@@ -279,6 +397,46 @@ export function MainHero() {
   }, []);
 
   const isCursorActive = cursorPos.x !== -999 && cursorPos.y !== -999;
+  const ratioY = isCursorActive ? Math.max(0, Math.min(1, cursorPos.y / (windowSize.height || 800))) : 0;
+  const currentDepth = Math.round(ratioY * 120);
+
+  const currentStratumIndex = rightStrata.findIndex(s => {
+    if (s.id === 'crust') return currentDepth <= 15;
+    if (s.id === 'basalt') return currentDepth > 15 && currentDepth <= 35;
+    if (s.id === 'metamorphic') return currentDepth > 35 && currentDepth <= 50;
+    if (s.id === 'mantle') return currentDepth > 50;
+    return false;
+  });
+
+  useEffect(() => {
+    setLingeredStratum(null);
+
+    if (currentStratumIndex === -1) {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      const activeStratum = rightStrata[currentStratumIndex];
+      setLingeredStratum(currentLang === 'en' ? activeStratum.labelEn : activeStratum.labelMn);
+    }, 500);
+
+    return () => {
+      clearTimeout(timer);
+    };
+  }, [currentStratumIndex, currentLang]);
+
+  let highlightTop = 0;
+  let highlightHeight = 0;
+  if (currentStratumIndex !== -1) {
+    highlightHeight = rightStrata[currentStratumIndex].height;
+    for (let i = 0; i < currentStratumIndex; i++) {
+      highlightTop += rightStrata[i].height;
+    }
+  }
+
+  const activeIndex = currentStratumIndex !== -1 ? currentStratumIndex : 3;
+  const tone = earthTones[activeIndex];
+
   const parallaxX1 = isCursorActive ? (cursorPos.x / windowSize.width - 0.5) * -15 : 0;
   const parallaxY1 = isCursorActive ? (cursorPos.y / windowSize.height - 0.5) * -15 : 0;
   const tiltX1 = isCursorActive ? (cursorPos.y / windowSize.height - 0.5) * 6 : 0;
@@ -308,7 +466,13 @@ export function MainHero() {
       id="lithos-app-root"
     >
       {/* Dynamic Glowing Cursor Trail */}
-      <CursorTrail cursorX={cursorPos.x} cursorY={cursorPos.y} shakeAmt={shakeAmt} />
+      <CursorTrail
+        cursorX={cursorPos.x}
+        cursorY={cursorPos.y}
+        shakeAmt={shakeAmt}
+        colorTheme={cursorColor}
+        shapeStyle={cursorShape}
+      />
 
       {/* Premium fixed navigation */}
       <Navbar
@@ -316,6 +480,8 @@ export function MainHero() {
         onSignUpClick={() => setIsSignUpOpen(true)}
         currentLang={currentLang}
         onLangToggle={() => setCurrentLang(prev => prev === 'en' ? 'mn' : 'en')}
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
         onTabChange={(tabId) => {
           // Verify registration for training simulators & games
           if (tabId === 'Idol' || tabId === 'Game' || tabId === 'Typashi' || tabId === 'Quiz') {
@@ -338,10 +504,20 @@ export function MainHero() {
             setIsQuizOpen(true);
           }
         }}
+        spotlightStyle={spotlightStyle}
+        setSpotlightStyle={setSpotlightStyle}
+        showLegend={showLegend}
+        setShowLegend={setShowLegend}
+        viewingMode={viewingMode}
+        setViewingMode={setViewingMode}
+        cursorColor={cursorColor}
+        setCursorColor={setCursorColor}
+        cursorShape={cursorShape}
+        setCursorShape={setCursorShape}
       />
 
       {/* Geological Live Telemetry & Date/Time HUD Clock */}
-      <div className="fixed top-24 right-6 z-[90] bg-black/50 backdrop-blur-md border border-white/10 px-4.5 py-3 rounded-2xl flex flex-col items-end gap-1 font-mono text-[11px] shadow-lg select-none w-52">
+      <div className="hidden sm:flex fixed top-[148px] right-6 z-[90] bg-black/50 backdrop-blur-md border border-white/10 px-4.5 py-3 rounded-2xl flex flex-col items-end gap-1 font-mono text-[11px] shadow-lg select-none w-52">
         <div className="flex items-center gap-1.5 text-zinc-400">
           <span className="w-1.5 h-1.5 rounded-full bg-[#e8702a] animate-pulse" />
           <span className="uppercase tracking-widest text-[9px] font-bold">
@@ -359,116 +535,6 @@ export function MainHero() {
           <span>•</span>
           <span>LON: 106.9183° E</span>
         </div>
-
-        {/* HUD Customizer Trigger Button */}
-        <button
-          onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-          className="mt-2.5 w-full bg-white/5 hover:bg-white/15 border border-white/10 text-white font-medium py-1.5 px-3 rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer text-[10px]"
-        >
-          <Settings className="w-3.5 h-3.5 text-[#e8702a] animate-spin-slow" />
-          <span>{currentLang === 'en' ? 'HUD Config' : 'HUD Тохиргоо'}</span>
-        </button>
-
-        {/* Sliding Settings panel */}
-        <AnimatePresence>
-          {isSettingsOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="w-full mt-2 border-t border-white/5 pt-2.5 flex flex-col gap-1.5 overflow-hidden text-left"
-            >
-              <span className="text-[9px] text-zinc-400 uppercase tracking-wider font-semibold">
-                {currentLang === 'en' ? 'Spotlight Style' : 'Гэрлийн загвар'}
-              </span>
-              <div className="grid grid-cols-2 gap-1 bg-black/40 p-1 rounded-lg border border-white/5">
-                <button
-                  onClick={() => setSpotlightStyle('heatmap')}
-                  className={`py-1 px-1 rounded text-[9px] font-semibold transition-all cursor-pointer ${
-                    spotlightStyle === 'heatmap'
-                      ? 'bg-[#e8702a] text-white shadow-sm'
-                      : 'text-zinc-500 hover:text-white'
-                  }`}
-                >
-                  {currentLang === 'en' ? 'Heatmap' : 'Дулаан'}
-                </button>
-                <button
-                  onClick={() => setSpotlightStyle('laser')}
-                  className={`py-1 px-1 rounded text-[9px] font-semibold transition-all cursor-pointer ${
-                    spotlightStyle === 'laser'
-                      ? 'bg-[#e8702a] text-white shadow-sm'
-                      : 'text-zinc-500 hover:text-white'
-                  }`}
-                >
-                  {currentLang === 'en' ? 'Laser' : 'Лазер'}
-                </button>
-              </div>
-
-              <span className="text-[9px] text-zinc-400 uppercase tracking-wider font-semibold mt-1">
-                {currentLang === 'en' ? 'Lithosphere Legend' : 'Литосферийн Домог'}
-              </span>
-              <div className="grid grid-cols-2 gap-1 bg-black/40 p-1 rounded-lg border border-white/5">
-                <button
-                  onClick={() => setShowLegend(true)}
-                  className={`py-1 px-1 rounded text-[9px] font-semibold transition-all cursor-pointer ${
-                    showLegend
-                      ? 'bg-[#e8702a] text-white shadow-sm'
-                      : 'text-zinc-500 hover:text-white'
-                  }`}
-                >
-                  {currentLang === 'en' ? 'Show' : 'Харуулах'}
-                </button>
-                <button
-                  onClick={() => setShowLegend(false)}
-                  className={`py-1 px-1 rounded text-[9px] font-semibold transition-all cursor-pointer ${
-                    !showLegend
-                      ? 'bg-[#e8702a] text-white shadow-sm'
-                      : 'text-zinc-500 hover:text-white'
-                  }`}
-                >
-                  {currentLang === 'en' ? 'Hide' : 'Нуух'}
-                </button>
-              </div>
-
-              <span className="text-[9px] text-zinc-400 uppercase tracking-wider font-semibold mt-1">
-                {currentLang === 'en' ? 'Viewing Mode' : 'Харах горим'}
-              </span>
-              <div className="flex flex-col gap-1 bg-black/40 p-1 rounded-lg border border-white/5">
-                <button
-                  onClick={() => setViewingMode('default')}
-                  className={`py-1.5 px-2 rounded text-[9px] font-semibold transition-all cursor-pointer text-left ${
-                    viewingMode === 'default'
-                      ? 'bg-[#e8702a] text-white shadow-sm'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  {currentLang === 'en' ? 'Default Crust' : 'Үндсэн царцдас'}
-                </button>
-                <button
-                  onClick={() => setViewingMode('seismic')}
-                  className={`py-1.5 px-2 rounded text-[9px] font-semibold transition-all cursor-pointer text-left ${
-                    viewingMode === 'seismic'
-                      ? 'bg-[#e8702a] text-white shadow-sm'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  {currentLang === 'en' ? 'Seismic Tectonic' : 'Сейсмик тектоник'}
-                </button>
-                <button
-                  onClick={() => setViewingMode('oceanic')}
-                  className={`py-1.5 px-2 rounded text-[9px] font-semibold transition-all cursor-pointer text-left ${
-                    viewingMode === 'oceanic'
-                      ? 'bg-[#e8702a] text-white shadow-sm'
-                      : 'text-zinc-400 hover:text-white'
-                  }`}
-                >
-                  {currentLang === 'en' ? 'Deep Ocean Abyssal' : 'Далайн гүний геод'}
-                </button>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </div>
 
       {/* Ambient Soundtrack Player with real-time screen-shake and cursor vectors */}
@@ -476,6 +542,176 @@ export function MainHero() {
 
       {/* Interactive Geological Live Depth Tracker Widget */}
       <DepthTracker cursorX={cursorPos.x} cursorY={cursorPos.y} windowHeight={windowSize.height} shakeAmount={shakeAmt} />
+
+      {/* Right Stratigraphy Ruler Scale */}
+      <div
+        id="right-ruler"
+        onMouseEnter={() => setIsRulerHovered(true)}
+        onMouseLeave={() => setIsRulerHovered(false)}
+        className="hidden md:flex fixed right-6 top-[320px] z-[90] flex-col items-end select-none pointer-events-auto w-48 bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-2.5 overflow-visible shadow-lg shadow-black/50 transition-all duration-300 hover:border-white/20 hover:bg-black/50"
+      >
+        {/* Dynamic sliding and morphing highlight background with soft emit inner-glow */}
+        <motion.div
+          id="right-ruler-highlight"
+          className="absolute rounded-xl border-r-4 pointer-events-none backdrop-blur-[1px]"
+          animate={{
+            backgroundImage: `linear-gradient(135deg, ${tone.start}, ${tone.mid}, ${tone.end})`,
+            backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+            borderColor: tone.border,
+            boxShadow: isRulerHovered 
+              ? `0 0 28px ${tone.glow}, inset 0 0 16px ${tone.glow}`
+              : isStationary ? [
+                  `0 0 18px ${tone.glow}, inset 0 0 12px ${tone.glow}`,
+                  `0 0 35px ${tone.glowPulse}, inset 0 0 22px ${tone.glowPulse}`,
+                  `0 0 18px ${tone.glow}, inset 0 0 12px ${tone.glow}`
+                ] : `0 0 18px ${tone.glow}, inset 0 0 12px ${tone.glow}`,
+            opacity: isStationary && !isRulerHovered ? [1, 0.75, 1] : 1
+          }}
+          transition={{
+            backgroundImage: { duration: 0.6, ease: "easeInOut" },
+            borderColor: { duration: 0.6, ease: "easeInOut" },
+            backgroundPosition: {
+              repeat: Infinity,
+              duration: 4.5,
+              ease: "linear"
+            },
+            boxShadow: isStationary && !isRulerHovered ? {
+              repeat: Infinity,
+              duration: 1.8,
+              ease: "easeInOut"
+            } : {
+              duration: 0.3
+            },
+            opacity: isStationary && !isRulerHovered ? {
+              repeat: Infinity,
+              duration: 1.8,
+              ease: "easeInOut"
+            } : {
+              duration: 0.3
+            }
+          }}
+          style={{
+            backgroundSize: "200% 200%",
+            top: `${highlightTop + 69}px`, // aligned with the items start top offset (padding + header + transient label)
+            height: `${highlightHeight}px`,
+            left: isRulerHovered ? '2px' : '8px',
+            right: isRulerHovered ? '2px' : '8px',
+            transition: 'top 0.5s cubic-bezier(0.16, 1, 0.3, 1), height 0.5s cubic-bezier(0.16, 1, 0.3, 1), left 0.3s cubic-bezier(0.16, 1, 0.3, 1), right 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+          }}
+        />
+
+        {/* High-precision caliper tick marks alongside the scale representing depth intervals */}
+        <div className="absolute left-3 top-[69px] h-[220px] w-6 flex flex-col justify-between pointer-events-auto z-20">
+          {Array.from({ length: 41 }).map((_, i) => {
+            const isMajor = i % 5 === 0;
+            const isMedium = i % 5 !== 0 && i % 2 === 0;
+            const depthMeters = i * 3000;
+            return (
+              <div
+                key={i}
+                className="group relative w-full h-[1px] flex items-center cursor-crosshair"
+              >
+                {/* Visual Tick Mark Line */}
+                <div
+                  className={`h-[1px] transition-all duration-200 pointer-events-none ${
+                    isMajor 
+                      ? 'w-3 bg-zinc-300 opacity-70 group-hover:bg-[#e8702a] group-hover:opacity-100 group-hover:w-4.5' 
+                      : isMedium 
+                        ? 'w-2 bg-zinc-400 opacity-50 group-hover:bg-[#e8702a] group-hover:opacity-100 group-hover:w-3.5' 
+                        : 'w-1 bg-zinc-600 opacity-30 group-hover:bg-[#e8702a] group-hover:opacity-100 group-hover:w-2.5'
+                  }`}
+                />
+                
+                {/* Large Invisible Hover Target Area */}
+                <div className="absolute -top-1 -bottom-1 left-0 w-6 bg-transparent" />
+
+                {/* Persistent Hover Tooltip displaying depth in meters */}
+                <div className="absolute right-full mr-3.5 pointer-events-none opacity-0 translate-x-1 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-200 z-[110] select-none">
+                  <div className="bg-zinc-950/95 border border-[#e8702a]/50 text-[9px] font-bold font-mono text-white px-2 py-0.5 rounded shadow-lg shadow-black/80 flex items-center gap-1.5 backdrop-blur-md whitespace-nowrap">
+                    <span className="text-[#e8702a] font-extrabold text-[7.5px] tracking-wider uppercase">DEPTH</span>
+                    <span className="w-1 h-1 rounded-full bg-green-400 animate-ping" />
+                    <span>{depthMeters.toLocaleString()} m</span>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Outer label & heading */}
+        <div className="w-full flex justify-end items-center px-1.5 pb-2 mb-1 border-b border-white/5 font-mono text-[9px] text-zinc-500 font-bold tracking-wider">
+          <span className="text-[#e8702a] font-bold tracking-tight">{currentDepth} km</span>
+        </div>
+
+        {/* Transient lingering stratum label */}
+        <div className="w-full h-7 relative overflow-hidden mb-1.5 border-b border-white/5 flex items-center justify-center">
+          <AnimatePresence mode="wait">
+            {lingeredStratum ? (
+              <motion.div
+                key={lingeredStratum}
+                id="right-ruler-transient-label"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: 10 }}
+                transition={{ duration: 0.25, ease: 'easeOut' }}
+                className="absolute inset-0 flex items-center justify-center gap-1.5 bg-[#e8702a]/10 border border-[#e8702a]/20 rounded-lg px-2"
+              >
+                <span className={`rounded-full bg-[#e8702a] shrink-0 transition-all duration-300 ${isStationary ? 'w-2 h-2 animate-ping shadow-[0_0_8px_#e8702a]' : 'w-1.5 h-1.5 animate-pulse'}`} />
+                <span className="text-[10px] font-bold text-[#e8702a] uppercase tracking-wider truncate flex items-center gap-1">
+                  <span>{lingeredStratum}</span>
+                  {isStationary && <span className="text-[7px] opacity-90 font-mono text-green-400 font-extrabold tracking-tight">● READY</span>}
+                </span>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="default-scale-title"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 0.4 }}
+                exit={{ opacity: 0 }}
+                className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-bold tracking-widest text-zinc-400 uppercase"
+              >
+                {currentLang === 'en' ? 'FOCUS STRATUM' : 'ИДЭВХТЭЙ ДАВХАРГА'}
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+        {/* Stratum Scale Items */}
+        <div className="relative w-full flex flex-col z-10">
+          {rightStrata.map((stratum, index) => {
+            const isActive = index === currentStratumIndex;
+            return (
+              <div
+                key={stratum.id}
+                style={{ height: `${stratum.height}px` }}
+                className="w-full flex items-center justify-between px-2 text-right transition-colors duration-300"
+              >
+                {/* Active/Hover state text indicator */}
+                <div className="flex flex-col items-end">
+                  <span className={`text-[10px] font-bold tracking-tight transition-colors duration-300 ${
+                    isActive ? 'text-[#e8702a]' : 'text-zinc-400'
+                  }`}>
+                    {currentLang === 'en' ? stratum.labelEn : stratum.labelMn}
+                  </span>
+                  <span className="text-[8px] font-mono text-zinc-500">
+                    {stratum.depthRange[0]} - {stratum.depthRange[1]} km
+                  </span>
+                </div>
+
+                {/* Ruler ticks on the far right */}
+                <div className="flex items-center gap-1.5 ml-2.5">
+                  <div className={`h-[1px] transition-all duration-300 ${
+                    isActive ? 'w-4 bg-[#e8702a]' : 'w-2 bg-zinc-600'
+                  }`} />
+                  <div className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                    isActive ? 'bg-[#e8702a] scale-125 shadow-sm shadow-[#e8702a]' : 'bg-zinc-700'
+                  }`} />
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Main Section */}
       <section
@@ -573,11 +809,11 @@ export function MainHero() {
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
               transition={{ duration: 0.3 }}
-              className="absolute left-6 top-[25%] md:top-[28%] flex flex-col gap-6 z-50 pointer-events-auto select-none"
+              className="hidden sm:flex fixed top-[148px] left-6 z-[90] bg-black/50 backdrop-blur-md border border-white/10 px-4 py-3 rounded-2xl flex flex-col items-start gap-3 pointer-events-auto select-none w-52 shadow-lg"
             >
-              <div className="flex flex-col gap-1">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="text-[9px] font-mono uppercase text-zinc-500 tracking-widest font-bold">
+              <div className="flex flex-col gap-1 w-full">
+                <div className="flex items-center justify-between gap-3 w-full">
+                  <span className="text-[9px] font-mono uppercase text-zinc-400 tracking-widest font-bold">
                     {currentLang === 'en' ? 'Stratum Pins' : 'Давхаргын тэмдэг'}
                   </span>
                   <button
@@ -588,7 +824,7 @@ export function MainHero() {
                     <X className="w-2.5 h-2.5" />
                   </button>
                 </div>
-                <div className="w-12 h-[2px] bg-[#e8702a]/40" />
+                <div className="w-full h-[1px] bg-[#e8702a]/30 mt-1" />
               </div>
 
               {layersData[currentLang].map((layer) => {
@@ -596,25 +832,25 @@ export function MainHero() {
                 return (
                   <div
                     key={layer.id}
-                    className="relative flex items-center group"
+                    className="relative flex items-center group w-full"
                     onMouseEnter={() => setHoveredLayer(layer.id)}
                     onMouseLeave={() => setHoveredLayer(null)}
                   >
                     {/* Benchmark Notch & Pulse */}
-                    <div className="flex items-center gap-3 cursor-pointer">
+                    <div className="flex items-center gap-3 cursor-pointer w-full">
                       <div className="relative flex items-center justify-center">
-                        <div className={`w-3.5 h-3.5 rounded-full border-2 transition-all duration-300 flex items-center justify-center ${
-                          isHovered ? 'bg-[#e8702a] border-white scale-125' : 'bg-transparent border-[#e8702a]/60 group-hover:border-[#e8702a]'
+                        <div className={`w-3 h-3 rounded-full border transition-all duration-300 flex items-center justify-center ${
+                          isHovered ? 'bg-[#e8702a] border-white scale-125 shadow-[0_0_8px_#e8702a]' : 'bg-transparent border-[#e8702a]/60 group-hover:border-[#e8702a]'
                         }`}>
-                          {isHovered && <span className="w-1.5 h-1.5 bg-white rounded-full" />}
+                          {isHovered && <span className="w-1 h-1 bg-white rounded-full" />}
                         </div>
                         {/* Outer pulsing ring */}
-                        <span className="absolute w-6 h-6 rounded-full border border-[#e8702a]/30 animate-ping opacity-30 pointer-events-none" />
+                        <span className="absolute w-5 h-5 rounded-full border border-[#e8702a]/30 animate-ping opacity-20 pointer-events-none" />
                       </div>
 
-                      <div className="flex flex-col font-mono text-[10px] text-zinc-400 group-hover:text-white transition-colors">
+                      <div className="flex flex-col font-mono text-[9px] text-zinc-400 group-hover:text-white transition-colors">
                         <span className="font-bold text-white tracking-wider">{layer.depth}</span>
-                        <span className="text-[8px] opacity-70 uppercase tracking-tight">{layer.title}</span>
+                        <span className="text-[8px] opacity-70 uppercase tracking-tight truncate max-w-[130px]">{layer.title}</span>
                       </div>
                     </div>
 
@@ -626,7 +862,7 @@ export function MainHero() {
                           animate={{ opacity: 1, x: 0, scale: 1 }}
                           exit={{ opacity: 0, x: 15, scale: 0.95 }}
                           transition={{ duration: 0.2 }}
-                          className="absolute left-32 md:left-40 top-1/2 -translate-y-1/2 w-72 md:w-80 bg-zinc-950/95 backdrop-blur-md border border-white/10 rounded-2xl p-4.5 shadow-2xl flex flex-col gap-2 z-[100]"
+                          className="absolute left-[220px] top-1/2 -translate-y-1/2 w-72 md:w-80 bg-zinc-950/95 backdrop-blur-md border border-white/10 rounded-2xl p-4.5 shadow-2xl flex flex-col gap-2 z-[100] text-left"
                         >
                           <div className="flex items-center gap-1.5 text-[#e8702a] text-[10px] font-mono uppercase tracking-wider">
                             <Sparkles className="w-3 h-3" />
@@ -689,19 +925,6 @@ export function MainHero() {
               {currentLang === 'en' ? 'SWIPE OR MOVE MOUSE TO PEEL BACK THE CRUST' : 'ЦАРЦДАСЫГ ХУУЛАХЫН ТУЛД ХУЛГАНАА ХӨДӨЛГӨНӨ ҮҮ'}
             </motion.div>
           )}
-        </div>
-
-        {/* Bottom-left Paragraph Block (z-50) */}
-        <div
-          id="hero-bottom-left-block"
-          className="hidden sm:block absolute bottom-14 left-10 md:left-14 max-w-[260px] z-50 hero-anim hero-fade"
-          style={{ animationDelay: '0.7s' }}
-        >
-          <p className="text-sm text-white/80 leading-relaxed" id="sediment-paragraph">
-            {currentLang === 'en'
-              ? 'Every layer of sediment records a chapter of our planet, from ancient seabeds to drifting ash, layered across millions of years beneath us.'
-              : 'Тунамал хурдсын давхарга бүр манай гарагийн нэгэн түүхийг өгүүлдэг бөгөөд эртний тэнгисийн ёроолоос эхлээд галт уулын үнс хүртэл олон сая жилийн турш бидний доор хуримтлагдсан байдаг.'}
-          </p>
         </div>
 
         {/* Bottom-right Block (z-50) */}
@@ -1186,91 +1409,206 @@ export function MainHero() {
               >
                 {currentLang === 'en' ? 'OCEAN' : 'ДАЛАЙ ТЭНГИС'}
               </button>
+              
+              {/* BOOKMARKS FILTER BUTTON */}
+              <button
+                id="filter-bookmarks"
+                onClick={() => {
+                  setActiveCategoryFilter('bookmarks');
+                  setVisibleCount(12);
+                }}
+                className={`px-4 py-1.5 rounded-xl text-xs font-mono transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeCategoryFilter === 'bookmarks'
+                    ? 'bg-[#e8702a] text-white font-bold shadow-md shadow-[#e8702a]/25'
+                    : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                }`}
+              >
+                <Heart className={`w-3.5 h-3.5 ${activeCategoryFilter === 'bookmarks' ? 'fill-white text-white' : 'text-[#e8702a]'}`} />
+                <span>{currentLang === 'en' ? 'BOOKMARKS' : 'ХАДГАЛСАН'}</span>
+                <span className="bg-white/10 px-1.5 py-0.5 rounded text-[10px] font-bold">
+                  {bookmarkedIds.length}
+                </span>
+              </button>
             </div>
           </div>
 
           {/* Dynamic Filtered Facts Bento Grid */}
           <div className="w-full flex flex-col items-center gap-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
-              <AnimatePresence mode="popLayout">
-                {factsDataList
-                  .filter(fact => activeCategoryFilter === 'all' || fact.category === activeCategoryFilter)
-                  .slice(0, visibleCount)
-                  .map((fact) => {
-                    const item = fact[currentLang];
-                    const getCategoryIcon = (category: string) => {
-                      switch (category) {
-                        case 'geology': return <Layers className="w-4 h-4 text-amber-500" />;
-                        case 'human': return <Heart className="w-4 h-4 text-[#e8702a]" />;
-                        case 'space': return <Orbit className="w-4 h-4 text-blue-400" />;
-                        case 'deepsea': return <Waves className="w-4 h-4 text-emerald-400" />;
-                        default: return <Droplet className="w-4 h-4 text-cyan-400" />;
-                      }
-                    };
-                    const getCategoryBadge = (category: string) => {
-                      switch (category) {
-                        case 'geology': return 'border-amber-500/20 bg-amber-500/5 text-amber-500';
-                        case 'human': return 'border-[#e8702a]/20 bg-[#e8702a]/5 text-[#e8702a]';
-                        case 'space': return 'border-blue-500/20 bg-blue-500/5 text-blue-400';
-                        case 'deepsea': return 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400';
-                        default: return 'border-cyan-500/20 bg-cyan-500/5 text-cyan-400';
-                      }
-                    };
+            {(() => {
+              // 1. Calculate matching list once to avoid duplicate checks or incorrect pagination counts
+              const filteredList = factsDataList.filter(fact => {
+                // Category or Bookmark Match
+                const matchesCategory = 
+                  activeCategoryFilter === 'all' ||
+                  (activeCategoryFilter === 'bookmarks' 
+                    ? bookmarkedIds.includes(fact.id) 
+                    : fact.category === activeCategoryFilter);
 
-                    return (
-                      <motion.div
-                        layout
-                        key={fact.id}
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        exit={{ opacity: 0, scale: 0.95 }}
-                        transition={{ duration: 0.25 }}
-                        className="bg-zinc-950/40 backdrop-blur-md border border-white/10 hover:border-white/20 transition-all rounded-3xl p-6 flex flex-col justify-between group"
-                      >
-                        <div>
-                          <div className="flex items-center justify-between mb-4">
-                            <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-105 transition-transform">
-                              {getCategoryIcon(fact.category)}
+                // Search matching (real-time keyword search)
+                const query = searchQuery.trim().toLowerCase();
+                if (query === '') return matchesCategory;
+
+                const item = fact[currentLang];
+                const matchesTitle = item.title.toLowerCase().includes(query);
+                const matchesDesc = item.desc.toLowerCase().includes(query);
+                const matchesCat = fact.category.toLowerCase().includes(query);
+
+                return matchesCategory && (matchesTitle || matchesDesc || matchesCat);
+              });
+
+              return (
+                <>
+                  <motion.div
+                    variants={{
+                      hidden: { opacity: 0 },
+                      show: {
+                        opacity: 1,
+                        transition: {
+                          staggerChildren: 0.04
+                        }
+                      }
+                    }}
+                    initial="hidden"
+                    animate="show"
+                    key={`${activeCategoryFilter}-${searchQuery}`}
+                    className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full"
+                  >
+                    <AnimatePresence mode="popLayout">
+                      {filteredList.slice(0, visibleCount).map((fact) => {
+                        const item = fact[currentLang];
+                        const isBookmarked = bookmarkedIds.includes(fact.id);
+
+                        const getCategoryIcon = (category: string) => {
+                          switch (category) {
+                            case 'geology': return <Layers className="w-4 h-4 text-amber-500" />;
+                            case 'human': return <Heart className="w-4 h-4 text-[#e8702a]" />;
+                            case 'space': return <Orbit className="w-4 h-4 text-blue-400" />;
+                            case 'deepsea': return <Waves className="w-4 h-4 text-emerald-400" />;
+                            default: return <Droplet className="w-4 h-4 text-cyan-400" />;
+                          }
+                        };
+                        const getCategoryBadge = (category: string) => {
+                          switch (category) {
+                            case 'geology': return 'border-amber-500/20 bg-amber-500/5 text-amber-500';
+                            case 'human': return 'border-[#e8702a]/20 bg-[#e8702a]/5 text-[#e8702a]';
+                            case 'space': return 'border-blue-500/20 bg-blue-500/5 text-blue-400';
+                            case 'deepsea': return 'border-emerald-500/20 bg-emerald-500/5 text-emerald-400';
+                            default: return 'border-cyan-500/20 bg-cyan-500/5 text-cyan-400';
+                          }
+                        };
+
+                        return (
+                          <motion.div
+                            layout
+                            key={fact.id}
+                            variants={{
+                              hidden: { opacity: 0, y: 20 },
+                              show: { opacity: 1, y: 0 }
+                            }}
+                            className="bg-zinc-950/40 backdrop-blur-md border border-white/10 hover:border-white/20 transition-all rounded-3xl p-6 flex flex-col justify-between group relative overflow-hidden"
+                          >
+                            <div>
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center gap-2.5">
+                                  <div className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center group-hover:scale-105 transition-transform">
+                                    {getCategoryIcon(fact.category)}
+                                  </div>
+                                  <span className={`text-[8px] font-mono px-2 py-0.5 rounded-full border ${getCategoryBadge(fact.category)} uppercase font-bold tracking-wider`}>
+                                    {fact.category === 'deepsea' ? (currentLang === 'en' ? 'sea' : 'далайн гүн') : fact.category}
+                                  </span>
+                                </div>
+
+                                {/* Bookmarking / Favoriting toggle */}
+                                <motion.button
+                                  whileHover={{ scale: 1.15 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleToggleBookmark(fact.id);
+                                  }}
+                                  className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/15 flex items-center justify-center text-[#e8702a] border border-white/5 transition-colors cursor-pointer z-10"
+                                  title={isBookmarked ? "Remove Bookmark" : "Save Bookmark"}
+                                >
+                                  <Heart 
+                                    className={`w-4 h-4 transition-all duration-300 ${
+                                      isBookmarked 
+                                        ? 'fill-[#e8702a] text-[#e8702a] filter drop-shadow-[0_0_4px_#e8702a]' 
+                                        : 'text-zinc-500 hover:text-white'
+                                    }`} 
+                                  />
+                                </motion.button>
+                              </div>
+                              
+                              <h4 className="text-base font-semibold text-white mb-2 font-sans tracking-tight">
+                                {item.title}
+                              </h4>
+                              
+                              <p className="text-xs text-zinc-400 leading-relaxed font-sans min-h-[64px]">
+                                {item.desc}
+                              </p>
                             </div>
-                            <span className={`text-[8px] font-mono px-2 py-0.5 rounded-full border ${getCategoryBadge(fact.category)} uppercase font-bold tracking-wider`}>
-                              {fact.category === 'deepsea' ? (currentLang === 'en' ? 'sea' : 'далайн гүн') : fact.category}
-                            </span>
-                          </div>
-                          
-                          <h4 className="text-base font-semibold text-white mb-2 font-sans tracking-tight">
-                            {item.title}
-                          </h4>
-                          
-                          <p className="text-xs text-zinc-400 leading-relaxed font-sans min-h-[64px]">
-                            {item.desc}
-                          </p>
-                        </div>
-                        
-                        <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
-                          <span className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest">
-                            {currentLang === 'en' ? 'PROBE COMPLETE' : 'ТАЙЛАЛ ДУУССАН'}
-                          </span>
-                          <div className="w-1.5 h-1.5 rounded-full bg-[#e8702a]" />
-                        </div>
-                      </motion.div>
-                    );
-                  })}
-              </AnimatePresence>
-            </div>
+                            
+                            <div className="mt-4 pt-3 border-t border-white/5 flex items-center justify-between">
+                              <span className="text-[8px] font-mono text-zinc-500 uppercase tracking-widest">
+                                {currentLang === 'en' ? 'PROBE COMPLETE' : 'ТАЙЛАЛ ДУУССАН'}
+                              </span>
+                              <div className="w-1.5 h-1.5 rounded-full bg-[#e8702a]" />
+                            </div>
+                          </motion.div>
+                        );
+                      })}
+                    </AnimatePresence>
+                  </motion.div>
 
-            {/* Pagination Load More Button */}
-            {factsDataList.filter(fact => activeCategoryFilter === 'all' || fact.category === activeCategoryFilter).length > visibleCount && (
-              <motion.button
-                id="load-more-facts"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                onClick={() => setVisibleCount(prev => prev + 12)}
-                className="px-6 py-3 rounded-full border border-zinc-800 bg-zinc-950 hover:bg-zinc-900 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/20 transition-all shadow-lg cursor-pointer flex items-center gap-2"
-              >
-                <RefreshCw className="w-3.5 h-3.5 animate-spin-slow text-[#e8702a]" />
-                {currentLang === 'en' ? 'LOAD ADDITIONAL SCIENTIFIC DATA' : 'НЭМЭЛТ СИНТЕТИК МЭДЭЭЛЭЛ УНШИХ'}
-              </motion.button>
-            )}
+                  {/* Empty State */}
+                  {filteredList.length === 0 && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex flex-col items-center justify-center py-16 px-6 text-center border border-dashed border-white/10 rounded-3xl bg-zinc-950/20 max-w-md mx-auto w-full z-10"
+                    >
+                      <Heart className="w-8 h-8 text-zinc-600 mb-3 animate-pulse" />
+                      <h4 className="text-white font-semibold text-sm mb-1">
+                        {activeCategoryFilter === 'bookmarks'
+                          ? (currentLang === 'en' ? 'No Saved Bookmarks' : 'Хадгалсан баримт одоогоор алга')
+                          : (currentLang === 'en' ? 'No Match Found' : 'Илэрц олдсонгүй')}
+                      </h4>
+                      <p className="text-xs text-zinc-500 max-w-sm leading-relaxed">
+                        {activeCategoryFilter === 'bookmarks'
+                          ? (currentLang === 'en' 
+                              ? 'Click the Heart icon on any of the 100 facts to save them to your bookmarks.'
+                              : 'Доорх 100 баримтын аль нэг дээрх зүрхэн дүрс дээр дарж өөрийн хадгалсан баримтдаа нэмээрэй.')
+                          : (currentLang === 'en'
+                              ? `Try searching with different keywords instead of "${searchQuery}".`
+                              : `"${searchQuery}" гэхээс өөр түлхүүр үг ашиглан хайж үзнэ үү.`)}
+                      </p>
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery('')}
+                          className="mt-4 px-4 py-1.5 bg-[#e8702a]/10 hover:bg-[#e8702a]/20 border border-[#e8702a]/30 rounded-xl text-xs font-mono text-[#e8702a] transition-all cursor-pointer"
+                        >
+                          {currentLang === 'en' ? 'Clear Search Filter' : 'Хайлтыг цэвэрлэх'}
+                        </button>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {/* Pagination Load More Button */}
+                  {filteredList.length > visibleCount && (
+                    <motion.button
+                      id="load-more-facts"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      onClick={() => setVisibleCount(prev => prev + 12)}
+                      className="px-6 py-3 rounded-full border border-zinc-800 bg-zinc-950 hover:bg-zinc-900 text-white font-mono text-xs font-semibold tracking-wider hover:border-white/20 transition-all shadow-lg cursor-pointer flex items-center gap-2 mt-4"
+                    >
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin-slow text-[#e8702a]" />
+                      {currentLang === 'en' ? 'LOAD ADDITIONAL SCIENTIFIC DATA' : 'НЭМЭЛТ СИНТЕТИК МЭДЭЭЛЭЛ УНШИХ'}
+                    </motion.button>
+                  )}
+                </>
+              );
+            })()}
           </div>
 
         </div>

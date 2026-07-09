@@ -410,7 +410,7 @@ export function AmbientPlayer({ shakeAmt = 0, cursorPos }: AmbientPlayerProps) {
 
   return (
     <>
-      <div className="absolute top-20 right-5 sm:right-10 md:right-14 z-50 pointer-events-auto select-none flex flex-col items-end gap-1.5 font-sans">
+      <div className="fixed top-24 right-6 z-[95] pointer-events-auto select-none flex flex-col items-end gap-1.5 font-sans">
         <audio ref={audioRef} loop onEnded={nextTrack} />
         <input
           type="file"
