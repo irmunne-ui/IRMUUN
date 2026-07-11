@@ -74,6 +74,7 @@ export function Navbar({
     { id: 'Game', label: currentLang === 'en' ? '🎮 Anime Guesser' : '🎮 Анимэ таагч' },
     { id: 'Typashi', label: currentLang === 'en' ? '🏎️ Typashi' : '🏎️ Типаши' },
     { id: 'Quiz', label: currentLang === 'en' ? '🔬 Geology Quiz' : '🔬 Геологийн сорил' },
+    { id: 'Paint', label: currentLang === 'en' ? '🎨 Lithos Paint' : '🎨 Зураг зурах' },
     { id: 'Typeracer', label: currentLang === 'en' ? '⌨️ Typeracer' : '⌨️ Шивэлтийн уралдаан' },
   ];
 

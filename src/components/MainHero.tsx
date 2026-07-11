@@ -18,6 +18,7 @@ import { TectonicDust } from './TectonicDust';
 import { DepthTracker } from './DepthTracker';
 import { CursorTrail } from './CursorTrail';
 import { GeologyQuiz } from './GeologyQuiz';
+import { PaintModal } from './PaintModal';
 
 const BG_IMAGE_1 =
   'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_195923_b0ba8ace-1d1d-4f2c-9a28-1ab84b330680.png&w=1280&q=85';
@@ -197,6 +198,7 @@ export function MainHero() {
   const [isGameOpen, setIsGameOpen] = useState(false);
   const [isTypashiOpen, setIsTypashiOpen] = useState(false);
   const [isQuizOpen, setIsQuizOpen] = useState(false);
+  const [isPaintOpen, setIsPaintOpen] = useState(false);
 
   // New States for Custom Viewing Modes, Legend, and Fact of the Day
   const [showLegend, setShowLegend] = useState(true);
@@ -341,9 +343,9 @@ export function MainHero() {
           const dy = mouse.current.y - prevMouse.current.y;
           const velocity = Math.sqrt(dx * dx + dy * dy);
 
-          // If velocity is high, trigger a seismic tectonic plate rumble
-          if (velocity > 75) {
-            currentShake.current = Math.min(18, currentShake.current + (velocity - 75) * 0.15);
+          // If velocity is high, trigger a subtle seismic tectonic plate rumble
+          if (velocity > 40) {
+            currentShake.current = Math.min(12, currentShake.current + (velocity - 40) * 0.12);
           }
 
           prevMouse.current = { x: mouse.current.x, y: mouse.current.y };
@@ -461,8 +463,11 @@ export function MainHero() {
 
   return (
     <div
-      className="min-h-screen bg-white tracking-[-0.02em] select-none text-white overflow-x-hidden"
-      style={{ fontFamily: "'Inter', sans-serif" }}
+      className="min-h-screen bg-white tracking-[-0.02em] select-none text-white overflow-x-hidden transition-transform duration-75 ease-out"
+      style={{
+        fontFamily: "'Inter', sans-serif",
+        transform: `translate(${shakeOffset.x}px, ${shakeOffset.y}px)`
+      }}
       id="lithos-app-root"
     >
       {/* Dynamic Glowing Cursor Trail */}
@@ -502,6 +507,8 @@ export function MainHero() {
             setIsTypashiOpen(true);
           } else if (tabId === 'Quiz') {
             setIsQuizOpen(true);
+          } else if (tabId === 'Paint') {
+            setIsPaintOpen(true);
           }
         }}
         spotlightStyle={spotlightStyle}
@@ -716,10 +723,9 @@ export function MainHero() {
       {/* Main Section */}
       <section
         id="geology-hero-section"
-        className="relative w-full overflow-hidden h-screen bg-black transition-transform duration-75 ease-out"
+        className="relative w-full overflow-hidden h-screen bg-black"
         style={{
-          height: '100dvh',
-          transform: `translate(${shakeOffset.x}px, ${shakeOffset.y}px)`
+          height: '100dvh'
         }}
       >
         {/* Base Layer: Wrapper with Parallax Translation & 3D Tilt */}
@@ -1741,6 +1747,7 @@ export function MainHero() {
       <AnimeGuesser isOpen={isGameOpen} onClose={() => setIsGameOpen(false)} />
       <Typashi isOpen={isTypashiOpen} onClose={() => setIsTypashiOpen(false)} userProfile={userProfile} />
       <GeologyQuiz isOpen={isQuizOpen} onClose={() => setIsQuizOpen(false)} currentLang={currentLang} />
+      <PaintModal isOpen={isPaintOpen} onClose={() => setIsPaintOpen(false)} currentLang={currentLang} />
       <MessengerPopup />
     </div>
   );
