@@ -1,15 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 import { Thermometer, Layers, Compass, Activity, ShieldAlert, ChevronUp, ChevronDown, Maximize2, Minimize2, Map, CircleDot } from 'lucide-react';
+import { LITHOSPHERE_PALETTES } from './palettesData';
 
 interface DepthTrackerProps {
   cursorX: number;
   cursorY: number;
   windowHeight: number;
   shakeAmount?: number;
+  activePaletteId?: string;
 }
 
-export function DepthTracker({ cursorX, cursorY, windowHeight, shakeAmount = 0 }: DepthTrackerProps) {
+export function DepthTracker({ cursorX, cursorY, windowHeight, shakeAmount = 0, activePaletteId = 'sedimentary' }: DepthTrackerProps) {
   const isCursorActive = cursorX !== -999 && cursorY !== -999;
   const [isExpanded, setIsExpanded] = useState(true);
   const seismographCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -116,10 +118,8 @@ export function DepthTracker({ cursorX, cursorY, windowHeight, shakeAmount = 0 }
   let composition = 'Granite, Clay, Feldspar';
   let chemical = 'SiO₂, Al₂O₃';
   let seismicSpeed = '5.8 km/s';
-  let colorTheme = 'from-emerald-500/20 to-teal-500/10';
-  let borderColor = 'border-emerald-500/30';
-  let textAccent = 'text-emerald-400';
 
+  let activeLayerIndex = 0;
   if (depth <= 15) {
     layerName = 'Upper Continental Crust';
     temp = `${20 + Math.round(ratioY * 15 * 15)}°C`;
@@ -127,9 +127,7 @@ export function DepthTracker({ cursorX, cursorY, windowHeight, shakeAmount = 0 }
     composition = 'Granite, Sedimentary Silt, Shales';
     chemical = 'SiO₂, Al₂O₃, KAlSi₃O₈';
     seismicSpeed = '6.0 km/s';
-    colorTheme = 'from-teal-500/20 to-emerald-500/10';
-    borderColor = 'border-teal-500/30';
-    textAccent = 'text-teal-400';
+    activeLayerIndex = 0;
   } else if (depth <= 35) {
     layerName = 'Lower Oceanic & Shield Crust';
     temp = `${250 + Math.round(((ratioY - 0.12) * 400))}°C`;
@@ -137,9 +135,7 @@ export function DepthTracker({ cursorX, cursorY, windowHeight, shakeAmount = 0 }
     composition = 'Basaltic Rocks, Anorthosite, Gabbro';
     chemical = 'CaAl₂Si₂O₈, (Mg,Fe)₂SiO₄';
     seismicSpeed = '6.7 km/s';
-    colorTheme = 'from-amber-500/20 to-orange-500/10';
-    borderColor = 'border-[#e8702a]/40';
-    textAccent = 'text-[#e8702a]';
+    activeLayerIndex = 1;
   } else if (depth <= 50) {
     layerName = 'Mohorovičić Discontinuity';
     temp = `${600 + Math.round(((ratioY - 0.3) * 600))}°C`;
@@ -147,9 +143,7 @@ export function DepthTracker({ cursorX, cursorY, windowHeight, shakeAmount = 0 }
     composition = 'Seismic Velocity Boundary (Moho)';
     chemical = 'Transition Zone: Crust to Mantle';
     seismicSpeed = '8.1 km/s';
-    colorTheme = 'from-red-500/20 to-orange-600/10';
-    borderColor = 'border-red-500/30';
-    textAccent = 'text-red-400';
+    activeLayerIndex = 2;
   } else {
     layerName = 'Upper Lithospheric Mantle';
     temp = `${900 + Math.round(((ratioY - 0.42) * 500))}°C`;
@@ -157,17 +151,50 @@ export function DepthTracker({ cursorX, cursorY, windowHeight, shakeAmount = 0 }
     composition = 'Peridotite, Dunite, Dense Eclogite';
     chemical = 'Mg₂SiO₄, Fe₂SiO₄, Pyroxene';
     seismicSpeed = '8.3 km/s';
-    colorTheme = 'from-[#e8702a]/20 to-red-500/10';
-    borderColor = 'border-amber-600/30';
-    textAccent = 'text-amber-500';
+    activeLayerIndex = 3;
   }
+
+  const palette = LITHOSPHERE_PALETTES.find((p) => p.id === activePaletteId) || LITHOSPHERE_PALETTES[0];
+  const activeLayerColor = palette.layers[activeLayerIndex];
 
   // Interactive Stratigraphy layers for the expanded legend visualization
   const strataLayers = [
-    { name: 'Upper Crust', range: '0-15 km', comp: 'Granite, Clay', color: 'border-teal-500/40 bg-teal-500/5', text: 'text-teal-400', active: depth <= 15 },
-    { name: 'Lower Crust', range: '15-35 km', comp: 'Basalt, Gabbro', color: 'border-orange-500/30 bg-[#e8702a]/5', text: 'text-[#e8702a]', active: depth > 15 && depth <= 35 },
-    { name: 'Moho Zone', range: '35-50 km', comp: 'Transition zone', color: 'border-red-500/30 bg-red-500/5', text: 'text-red-400', active: depth > 35 && depth <= 50 },
-    { name: 'Upper Mantle', range: '50-120 km', comp: 'Peridotite, Dunite', color: 'border-amber-500/30 bg-amber-500/5', text: 'text-amber-500', active: depth > 50 }
+    { 
+      name: 'Upper Crust', 
+      range: '0-15 km', 
+      comp: 'Granite, Clay', 
+      borderColor: palette.layers[0].border,
+      bgColor: palette.layers[0].start,
+      textColor: palette.layers[0].border,
+      active: depth <= 15 
+    },
+    { 
+      name: 'Lower Crust', 
+      range: '15-35 km', 
+      comp: 'Basalt, Gabbro', 
+      borderColor: palette.layers[1].border,
+      bgColor: palette.layers[1].start,
+      textColor: palette.layers[1].border,
+      active: depth > 15 && depth <= 35 
+    },
+    { 
+      name: 'Moho Zone', 
+      range: '35-50 km', 
+      comp: 'Transition zone', 
+      borderColor: palette.layers[2].border,
+      bgColor: palette.layers[2].start,
+      textColor: palette.layers[2].border,
+      active: depth > 35 && depth <= 50 
+    },
+    { 
+      name: 'Upper Mantle', 
+      range: '50-120 km', 
+      comp: 'Peridotite, Dunite', 
+      borderColor: palette.layers[3].border,
+      bgColor: palette.layers[3].start,
+      textColor: palette.layers[3].border,
+      active: depth > 50 
+    }
   ];
 
   return (
@@ -176,15 +203,24 @@ export function DepthTracker({ cursorX, cursorY, windowHeight, shakeAmount = 0 }
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: -30 }}
       layout
-      className={`fixed bottom-8 left-4 sm:left-10 md:left-14 z-[90] ${isExpanded ? 'w-[310px]' : 'w-[260px]'} backdrop-blur-md bg-black/85 rounded-2xl border ${borderColor} p-4 text-white shadow-2xl overflow-hidden transition-all duration-300`}
+      className={`fixed bottom-8 left-4 sm:left-10 md:left-14 z-[90] ${isExpanded ? 'w-[310px]' : 'w-[260px]'} backdrop-blur-md bg-black/85 rounded-2xl border p-4 text-white shadow-2xl overflow-hidden transition-all duration-300`}
+      style={{ borderColor: activeLayerColor.border }}
     >
       {/* Background radial gradient corresponding to the layer */}
-      <div className={`absolute -right-12 -top-12 w-28 h-28 bg-gradient-to-br ${colorTheme} rounded-full blur-2xl pointer-events-none`} />
+      <div 
+        className="absolute -right-12 -top-12 w-28 h-28 rounded-full blur-2xl pointer-events-none"
+        style={{
+          background: `radial-gradient(circle at center, ${activeLayerColor.glow} 0%, transparent 70%)`
+        }}
+      />
 
       {/* Header */}
       <div className="flex items-center justify-between border-b border-zinc-800/60 pb-2 mb-3 select-none">
         <div className="flex items-center gap-2">
-          <Layers className={`w-4 h-4 ${textAccent} animate-pulse`} />
+          <Layers 
+            className="w-4 h-4 animate-pulse" 
+            style={{ color: activeLayerColor.border }}
+          />
           <span className="text-[10px] font-mono uppercase tracking-widest text-zinc-400">
             LITHOSPHERE LEGEND
           </span>
@@ -225,7 +261,12 @@ export function DepthTracker({ cursorX, cursorY, windowHeight, shakeAmount = 0 }
             <div className="grid grid-cols-2 gap-2 text-xs font-mono">
               <div className="bg-zinc-900/40 p-2 rounded-lg border border-zinc-800/40">
                 <span className="text-[8px] text-zinc-500 block uppercase">Est. Depth</span>
-                <span className={`text-sm font-bold ${textAccent}`}>{depth} km</span>
+                <span 
+                  className="text-sm font-bold"
+                  style={{ color: activeLayerColor.border }}
+                >
+                  {depth} km
+                </span>
               </div>
               <div className="bg-zinc-900/40 p-2 rounded-lg border border-zinc-800/40">
                 <span className="text-[8px] text-zinc-500 block uppercase flex items-center gap-1">
@@ -246,8 +287,11 @@ export function DepthTracker({ cursorX, cursorY, windowHeight, shakeAmount = 0 }
                 {/* Visual vertical scale path */}
                 <div className="absolute left-1.5 top-2 bottom-2 w-1 bg-zinc-800 rounded-full overflow-hidden">
                   <div 
-                    className="w-full bg-gradient-to-b from-teal-500 via-[#e8702a] to-amber-500 transition-all duration-150"
-                    style={{ height: `${(depth / 120) * 100}%` }}
+                    className="w-full transition-all duration-150"
+                    style={{ 
+                      height: `${(depth / 120) * 100}%`,
+                      backgroundImage: `linear-gradient(to bottom, ${palette.layers[0].border}, ${palette.layers[1].border}, ${palette.layers[3].border})`
+                    }}
                   />
                 </div>
 
@@ -256,18 +300,28 @@ export function DepthTracker({ cursorX, cursorY, windowHeight, shakeAmount = 0 }
                     key={index}
                     className={`relative p-1.5 rounded-lg border text-left transition-all ${
                       layer.active 
-                        ? `${layer.color} border-[#e8702a] shadow-md shadow-[#e8702a]/5 ring-1 ring-[#e8702a]/20` 
+                        ? 'shadow-md ring-1' 
                         : 'border-zinc-900 bg-zinc-950/20 opacity-40'
                     }`}
+                    style={layer.active ? {
+                      borderColor: layer.borderColor,
+                      backgroundColor: layer.bgColor,
+                      boxShadow: `0 0 10px ${layer.borderColor}20`,
+                    } : {}}
                   >
                     {/* Active target cursor pointer */}
                     {layer.active && (
                       <div className="absolute left-[-16px] top-1/2 -translate-y-1/2">
-                        <CircleDot className={`w-3.5 h-3.5 ${layer.text} animate-ping`} />
+                        <CircleDot 
+                          className="w-3.5 h-3.5 animate-pulse" 
+                          style={{ color: layer.textColor }}
+                        />
                       </div>
                     )}
                     <div className="flex justify-between items-center text-[10px] font-semibold">
-                      <span className={layer.active ? layer.text : 'text-zinc-300'}>{layer.name}</span>
+                      <span style={layer.active ? { color: layer.textColor } : {}} className={layer.active ? '' : 'text-zinc-300'}>
+                        {layer.name}
+                      </span>
                       <span className="text-[8px] font-mono text-zinc-500">{layer.range}</span>
                     </div>
                     {layer.active && (
@@ -322,7 +376,12 @@ export function DepthTracker({ cursorX, cursorY, windowHeight, shakeAmount = 0 }
           >
             <div>
               <span className="text-[8px] text-zinc-500 block uppercase">Explore Depth</span>
-              <span className={`text-sm font-bold ${textAccent}`}>{depth} km</span>
+              <span 
+                className="text-sm font-bold"
+                style={{ color: activeLayerColor.border }}
+              >
+                {depth} km
+              </span>
             </div>
             <div className="text-right">
               <span className="text-[8px] text-zinc-500 block uppercase">Active Zone</span>

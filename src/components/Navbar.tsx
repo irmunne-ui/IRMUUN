@@ -6,6 +6,7 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, Globe, Sparkles, Search, Settings } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import { LITHOSPHERE_PALETTES } from './palettesData';
 
 interface NavbarProps {
   onSignUpClick?: () => void;
@@ -21,12 +22,22 @@ interface NavbarProps {
   setSpotlightStyle?: (style: 'heatmap' | 'laser') => void;
   showLegend?: boolean;
   setShowLegend?: (show: boolean) => void;
-  viewingMode?: 'default' | 'seismic' | 'oceanic';
-  setViewingMode?: (mode: 'default' | 'seismic' | 'oceanic') => void;
+  viewingMode?: string;
+  setViewingMode?: (mode: string) => void;
   cursorColor?: 'tectonic' | 'emerald' | 'magma' | 'abyssal' | 'cosmic' | 'aurora' | 'solar' | 'nebula' | 'neon_pink' | 'amber_gold' | 'deep_forest' | 'hyper_blue' | 'mint_fresh' | 'crystal_white' | 'obsidian_black' | 'bronze' | 'lavender' | 'iridescent_rainbow';
   setCursorColor?: (color: 'tectonic' | 'emerald' | 'magma' | 'abyssal' | 'cosmic' | 'aurora' | 'solar' | 'nebula' | 'neon_pink' | 'amber_gold' | 'deep_forest' | 'hyper_blue' | 'mint_fresh' | 'crystal_white' | 'obsidian_black' | 'bronze' | 'lavender' | 'iridescent_rainbow') => void;
   cursorShape?: 'line' | 'dots' | 'ring' | 'crosshair' | 'triangle' | 'square' | 'star' | 'hexagon' | 'diamond' | 'swirl' | 'pulsing_radar' | 'brackets' | 'gear' | 'atom' | 'flower_of_life' | 'dna' | 'meteor_shower';
   setCursorShape?: (shape: 'line' | 'dots' | 'ring' | 'crosshair' | 'triangle' | 'square' | 'star' | 'hexagon' | 'diamond' | 'swirl' | 'pulsing_radar' | 'brackets' | 'gear' | 'atom' | 'flower_of_life' | 'dna' | 'meteor_shower') => void;
+  isMagnifierActive?: boolean;
+  setIsMagnifierActive?: (active: boolean) => void;
+  magnifierScale?: number;
+  setMagnifierScale?: (scale: number) => void;
+  magnifierSize?: number;
+  setMagnifierSize?: (size: number) => void;
+  activePaletteId?: string;
+  setActivePaletteId?: (id: string) => void;
+  showFloatingLabels?: boolean;
+  setShowFloatingLabels?: (show: boolean) => void;
 }
 
 export function Navbar({
@@ -49,6 +60,16 @@ export function Navbar({
   setCursorColor,
   cursorShape = 'line',
   setCursorShape,
+  isMagnifierActive = false,
+  setIsMagnifierActive,
+  magnifierScale = 2,
+  setMagnifierScale,
+  magnifierSize = 180,
+  setMagnifierSize,
+  activePaletteId = 'sedimentary',
+  setActivePaletteId,
+  showFloatingLabels = true,
+  setShowFloatingLabels,
 }: NavbarProps) {
   const [activeTab, setActiveTab] = useState<string>('Course');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState<boolean>(false);
@@ -297,16 +318,55 @@ export function Navbar({
 
                   <div className="flex flex-col gap-1">
                     <span className="text-[9px] text-zinc-400 uppercase tracking-wider font-semibold">
-                      {currentLang === 'en' ? 'Viewing Mode' : 'Харах горим'}
+                      {currentLang === 'en' ? 'Floating Depth Labels' : 'Хөвөгч гүний шошго'}
+                    </span>
+                    <div className="grid grid-cols-2 gap-1 bg-white/5 p-1 rounded-lg border border-white/5">
+                      <button
+                        onClick={() => setShowFloatingLabels && setShowFloatingLabels(true)}
+                        className={`py-1 px-1 rounded text-[9px] font-semibold transition-all cursor-pointer ${
+                          showFloatingLabels
+                            ? 'bg-[#e8702a] text-white shadow-sm'
+                            : 'text-zinc-500 hover:text-white'
+                        }`}
+                      >
+                        {currentLang === 'en' ? 'Show' : 'Харуулах'}
+                      </button>
+                      <button
+                        onClick={() => setShowFloatingLabels && setShowFloatingLabels(false)}
+                        className={`py-1 px-1 rounded text-[9px] font-semibold transition-all cursor-pointer ${
+                          !showFloatingLabels
+                            ? 'bg-[#e8702a] text-white shadow-sm'
+                            : 'text-zinc-500 hover:text-white'
+                        }`}
+                      >
+                        {currentLang === 'en' ? 'Hide' : 'Нуух'}
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[9px] text-zinc-400 uppercase tracking-wider font-semibold flex items-center justify-between">
+                      <span>{currentLang === 'en' ? 'Viewing Mode' : 'Харах горим'}</span>
+                      <span className="text-[8px] text-orange-400 font-mono bg-orange-500/10 px-1 rounded uppercase font-bold">13 MODES</span>
                     </span>
                     <select
                       value={viewingMode}
-                      onChange={(e) => setViewingMode && setViewingMode(e.target.value as any)}
+                      onChange={(e) => setViewingMode && setViewingMode(e.target.value)}
                       className="w-full bg-black/50 border border-white/10 rounded-lg py-1.5 px-2 text-[9px] font-semibold text-white focus:outline-none focus:border-[#e8702a] cursor-pointer"
                     >
                       <option value="default" className="bg-zinc-950">{currentLang === 'en' ? 'Default Crust' : 'Үндсэн царцдас'}</option>
                       <option value="seismic" className="bg-zinc-950">{currentLang === 'en' ? 'Seismic Tectonic' : 'Сейсмик тектоник'}</option>
                       <option value="oceanic" className="bg-zinc-950">{currentLang === 'en' ? 'Deep Ocean Abyssal' : 'Далайн гүний геод'}</option>
+                      <option value="magnetic" className="bg-zinc-950">{currentLang === 'en' ? 'Magnetic Anomalies' : 'Соронзон гажиг'}</option>
+                      <option value="gravity" className="bg-zinc-950">{currentLang === 'en' ? 'Gravitational Field' : 'Гравитацын орон'}</option>
+                      <option value="thermal" className="bg-zinc-950">{currentLang === 'en' ? 'Thermal Tomography' : 'Дулааны томографи'}</option>
+                      <option value="mantle_plumes" className="bg-zinc-950">{currentLang === 'en' ? 'Mantle Plumes' : 'Мантийн урсгал'}</option>
+                      <option value="archaean" className="bg-zinc-950">{currentLang === 'en' ? 'Archaean Paleocrust' : 'Архейн эртний царцдас'}</option>
+                      <option value="subduction" className="bg-zinc-950">{currentLang === 'en' ? 'Active Subduction Zone' : 'Идэвхтэй субдукц'}</option>
+                      <option value="metallogenic" className="bg-zinc-950">{currentLang === 'en' ? 'Metallogenic Ore Deposits' : 'Металлоген баялаг'}</option>
+                      <option value="fault_stresses" className="bg-zinc-950">{currentLang === 'en' ? 'Lithospheric Fault Stresses' : 'Хагарлын хүчдэл'}</option>
+                      <option value="xenolith" className="bg-zinc-950">{currentLang === 'en' ? 'Xenolith Inclusions' : 'Ксенолит агууламж'}</option>
+                      <option value="cryosphere" className="bg-zinc-950">{currentLang === 'en' ? 'Glacial Cryosphere Interaction' : 'Мөсөн бүрхүүл'}</option>
                     </select>
                   </div>
 
@@ -382,6 +442,114 @@ export function Navbar({
                       <option value="meteor_shower" className="bg-zinc-950">{currentLang === 'en' ? 'Meteor Spark Shower' : 'Солирын оч'}</option>
                     </select>
                   </div>
+
+                  {/* 3.5 Lithosphere Color Palette Selector */}
+                  <div className="flex flex-col gap-1 border-t border-white/5 pt-2">
+                    <span className="text-[9px] text-zinc-400 uppercase tracking-wider font-semibold flex items-center justify-between">
+                      <span>{currentLang === 'en' ? 'Lithosphere Palette' : 'Литосферийн Өнгө'}</span>
+                      <span className="text-[8px] text-orange-400 font-mono bg-orange-500/10 px-1 rounded uppercase font-bold">10 THEMES</span>
+                    </span>
+                    <select
+                      value={activePaletteId}
+                      onChange={(e) => setActivePaletteId && setActivePaletteId(e.target.value)}
+                      className="w-full bg-black/50 border border-white/10 rounded-lg py-1.5 px-2 text-[9px] font-semibold text-white focus:outline-none focus:border-[#e8702a] cursor-pointer"
+                    >
+                      {LITHOSPHERE_PALETTES.map((pal) => (
+                        <option key={pal.id} value={pal.id} className="bg-zinc-950">
+                          {currentLang === 'en' ? pal.nameEn : pal.nameMn}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* 4. Tectonic Magnifying Lens Control */}
+                  <div className="flex flex-col gap-1 border-t border-white/5 pt-2">
+                    <span className="text-[9px] text-zinc-400 uppercase tracking-wider font-semibold flex items-center justify-between">
+                      <span>{currentLang === 'en' ? 'Physical Magnifying Lens' : 'Гадаргуугийн Өсгөгч'}</span>
+                      <span className="text-[8px] text-orange-400 font-mono bg-orange-500/10 px-1 rounded uppercase">NEW</span>
+                    </span>
+                    <div className="grid grid-cols-2 gap-1 bg-white/5 p-1 rounded-lg border border-white/5">
+                      <button
+                        onClick={() => setIsMagnifierActive && setIsMagnifierActive(true)}
+                        className={`py-1 px-1 rounded text-[9px] font-semibold transition-all cursor-pointer ${
+                          isMagnifierActive
+                            ? 'bg-[#e8702a] text-white shadow-sm'
+                            : 'text-zinc-500 hover:text-white'
+                        }`}
+                      >
+                        {currentLang === 'en' ? 'Active' : 'Идэвхтэй'}
+                      </button>
+                      <button
+                        onClick={() => setIsMagnifierActive && setIsMagnifierActive(false)}
+                        className={`py-1 px-1 rounded text-[9px] font-semibold transition-all cursor-pointer ${
+                          !isMagnifierActive
+                            ? 'bg-[#e8702a] text-white shadow-sm'
+                            : 'text-zinc-500 hover:text-white'
+                        }`}
+                      >
+                        {currentLang === 'en' ? 'Disabled' : 'Хаах'}
+                      </button>
+                    </div>
+                  </div>
+
+                  {isMagnifierActive && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="flex flex-col gap-2 overflow-hidden"
+                    >
+                      {/* Scale / Zoom Power */}
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold flex justify-between">
+                          <span>{currentLang === 'en' ? 'Lens Zoom Power' : 'Өсгөлтийн хувь'}</span>
+                          <span className="text-orange-400 font-bold">{magnifierScale}x</span>
+                        </span>
+                        <div className="grid grid-cols-4 gap-1 bg-white/5 p-1 rounded-lg border border-white/5">
+                          {[1.5, 2, 2.5, 3].map((val) => (
+                            <button
+                              key={val}
+                              onClick={() => setMagnifierScale && setMagnifierScale(val)}
+                              className={`py-1 px-0.5 rounded text-[9px] font-mono font-semibold transition-all cursor-pointer ${
+                                magnifierScale === val
+                                  ? 'bg-[#e8702a]/20 border border-[#e8702a]/30 text-orange-400'
+                                  : 'text-zinc-500 hover:text-white'
+                              }`}
+                            >
+                              {val}x
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Aperture Size */}
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[9px] text-zinc-500 uppercase tracking-wider font-semibold flex justify-between">
+                          <span>{currentLang === 'en' ? 'Lens Diameter' : 'Өсгөгчийн Хэмжээ'}</span>
+                          <span className="text-orange-400 font-bold">{magnifierSize}px</span>
+                        </span>
+                        <div className="grid grid-cols-3 gap-1 bg-white/5 p-1 rounded-lg border border-white/5">
+                          {[
+                            { id: 140, label: currentLang === 'en' ? 'Compact' : 'Жижиг' },
+                            { id: 190, label: currentLang === 'en' ? 'Medium' : 'Дундаж' },
+                            { id: 250, label: currentLang === 'en' ? 'Panoramic' : 'Том' }
+                          ].map((opt) => (
+                            <button
+                              key={opt.id}
+                              onClick={() => setMagnifierSize && setMagnifierSize(opt.id)}
+                              className={`py-1 px-0.5 rounded text-[8px] font-semibold transition-all cursor-pointer ${
+                                magnifierSize === opt.id
+                                  ? 'bg-[#e8702a]/20 border border-[#e8702a]/30 text-orange-400'
+                                  : 'text-zinc-500 hover:text-white'
+                              }`}
+                            >
+                              {opt.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
                 </motion.div>
               )}
             </AnimatePresence>

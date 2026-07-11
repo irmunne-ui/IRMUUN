@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { ArrowRight, Compass, Layers, Milestone, ShieldAlert, Sparkles, X, Settings, Globe, Heart, Orbit, Waves, Droplet, RefreshCw } from 'lucide-react';
+import { ArrowRight, Compass, Layers, Milestone, ShieldAlert, Sparkles, X, Settings, Globe, Heart, Orbit, Waves, Droplet, RefreshCw, BookOpen } from 'lucide-react';
 import { factsDataList } from './factsData';
 import { Navbar } from './Navbar';
 import { RevealLayer } from './RevealLayer';
@@ -19,6 +19,9 @@ import { DepthTracker } from './DepthTracker';
 import { CursorTrail } from './CursorTrail';
 import { GeologyQuiz } from './GeologyQuiz';
 import { PaintModal } from './PaintModal';
+import { MagnifyingLens } from './MagnifyingLens';
+import { EducationPanel } from './EducationPanel';
+import { LITHOSPHERE_PALETTES } from './palettesData';
 
 const BG_IMAGE_1 =
   'https://images.higgs.ai/?default=1&output=webp&url=https%3A%2F%2Fd8j0ntlcm91z4.cloudfront.net%2Fuser_38xzZboKViGWJOttwIXH07lWA1P%2Fhf_20260609_195923_b0ba8ace-1d1d-4f2c-9a28-1ab84b330680.png&w=1280&q=85';
@@ -90,7 +93,78 @@ const layersData = {
   ]
 };
 
-const modesConfig = {
+const GEOLOGICAL_FEATURES = [
+  {
+    layer: 'crust',
+    featuresEn: [
+      { name: 'Quartz Vein Hydrothermal', desc: 'Silica-rich water crystallized in rock fractures' },
+      { name: 'Organic Clay Horizon', desc: 'Silt deposits filled with Holocene microfossils' },
+      { name: 'Granite Pegmatite Pluton', desc: 'Slowly-cooled igneous body with large crystals' },
+      { name: 'Sedimentary Varve Banding', desc: 'Annual glacial lake silt-and-clay deposits' },
+      { name: 'Kaolinite Clay Layer', desc: 'Weathered feldspar clay mineral rich zone' }
+    ],
+    featuresMn: [
+      { name: 'Кварцын судал', desc: 'Хагарлуудад талстжсан цахиураар баялаг ус' },
+      { name: 'Органик шавран үе', desc: 'Голоцений бичил үлдэгдэлтэй хурдас' },
+      { name: 'Боржингийн Пегматит', desc: 'Аажим хөрсөн том талст бүхий магмын чулуулаг' },
+      { name: 'Тунамал элсэрхэг үе', desc: 'Мөсөн голын нуурын жил бүрийн хурдас' },
+      { name: 'Каолинит шаврын үе', desc: 'Өгөршсөн хээрийн жоншоор баялаг бүс' }
+    ]
+  },
+  {
+    layer: 'basalt',
+    featuresEn: [
+      { name: 'Columnar Basalt Fracture', desc: 'Hexagonal cooling cracks from lava shrinkage' },
+      { name: 'Gabbro Sill Intrusion', desc: 'Coarse-grained mafic intrusion beneath crust' },
+      { name: 'Anorthosite Crystal Lens', desc: 'Plagioclase-rich rock representing early crust' },
+      { name: 'Active Tectonic Fault Gouge', desc: 'Crushed rock flour along active fault plane' },
+      { name: 'Slickenlined Basalt Shear', desc: 'Polished scratch marks showing fault movement' }
+    ],
+    featuresMn: [
+      { name: 'Баганат базальт цууралт', desc: 'Лаав агшихад үүссэн зургаан өнцөгт ан цав' },
+      { name: 'Габброгийн Силлийн нэвтрэлт', desc: 'Царцдасын доорх ширхэгтэй мафийн биет' },
+      { name: 'Анортозитын талст линз', desc: 'Эртний царцдасыг төлөөлөх плагиоклазаар баялаг чулуулаг' },
+      { name: 'Идэвхтэй тектоникийн хагарлын нунтаг', desc: 'Идэвхтэй хагарлын хавтгай дагуух буталсан чулуу' },
+      { name: 'Сликенлайн базальт шилжилт', desc: 'Хагарлын хөдөлгөөнийг харуулах өнгөлөгдсөн зураас' }
+    ]
+  },
+  {
+    layer: 'metamorphic',
+    featuresEn: [
+      { name: 'Eclogite High-Pressure Facies', desc: 'Metamorphosed basalt indicating subducted slabs' },
+      { name: 'Mohorovičić Boundary Transition', desc: 'Major seismic speed boundary from crust to mantle' },
+      { name: 'Serpentinized Peridotite Web', desc: 'Hydrated mantle rock veins with glossy texture' },
+      { name: 'Sheared Quartzite Fold', desc: 'Highly compressed quartz crystals bent by plate stress' },
+      { name: 'Mica Schist Folia', desc: 'Aligned mineral sheets reflecting crustal squeezing' }
+    ],
+    featuresMn: [
+      { name: 'Эклогитын өндөр даралтын фац', desc: 'Хувирсан базальт, субдукцын бүсийг илтгэнэ' },
+      { name: 'Мохогийн зааг шилжилт', desc: 'Царцдасаас манти хүртэлх сейсмикийн гол зааг' },
+      { name: 'Серпентинжсэн Перидотит', desc: 'Гялалзсан бүтэцтэй гидратжсан мантийн чулуулаг' },
+      { name: 'Суналтын Кварцит нугалаа', desc: 'Шахалтаас нугарсан кварцын талстууд' },
+      { name: 'Мика Схист хуудаслалт', desc: 'Царцдасын шахалтыг тусгасан чиглэсэн эрдсүүд' }
+    ]
+  },
+  {
+    layer: 'mantle',
+    featuresEn: [
+      { name: 'Peridotite Matrix Base', desc: 'Dense mantle rock rich in olivine and pyroxene' },
+      { name: 'Garnet Pyrope Megacryst', desc: 'Deep red gemstone crystallized at crushing depths' },
+      { name: 'Chromite Layered Accumulate', desc: 'Heavy metallic mineral bands from crystal settling' },
+      { name: 'Kimberlite Diamond Pipe Conduit', desc: 'Supersonic volcanic pipe carrying deep mantle gems' },
+      { name: 'Mantle Plume Thermal Diapir', desc: 'Buoyant upwelling of superheated solid mantle' }
+    ],
+    featuresMn: [
+      { name: 'Перидотитын матриц суурь', desc: 'Оливин, пироксеноор баялаг нягт мантийн чулуулаг' },
+      { name: 'Пироп анарын аварга талст', desc: 'Асар их гүнд талстжсан гүн улаан эрдэнийн чулуу' },
+      { name: 'Хромитын давхаргат хуримтлал', desc: 'Талст тунах үйл явцаас үүссэн хүнд металлын эрдэс' },
+      { name: 'Кимберлитийн алмазын хоолой', desc: 'Мантийн гүнээс алмаз тээвэрлэсэн галт уулын хоолой' },
+      { name: 'Мантийн дулааны диапир', desc: 'Хэт халсан хатуу мантийн дээшлэх урсгал' }
+    ]
+  }
+];
+
+const modesConfig: Record<string, { base: string; reveal: string; labelEn: string; labelMn: string }> = {
   default: {
     base: BG_IMAGE_1,
     reveal: BG_IMAGE_2,
@@ -108,6 +182,66 @@ const modesConfig = {
     reveal: 'https://images.unsplash.com/photo-1551244072-5d12893278ab?auto=format&fit=crop&w=1280&q=80',
     labelEn: 'Deep Ocean Abyssal',
     labelMn: 'Далайн гүний геод'
+  },
+  magnetic: {
+    base: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&w=1280&q=80',
+    reveal: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=1280&q=80',
+    labelEn: 'Magnetic Anomalies',
+    labelMn: 'Соронзон гажиг'
+  },
+  gravity: {
+    base: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=1280&q=80',
+    reveal: 'https://images.unsplash.com/photo-1446776811953-b23d57bd21aa?auto=format&fit=crop&w=1280&q=80',
+    labelEn: 'Gravitational Field',
+    labelMn: 'Гравитацын орон'
+  },
+  thermal: {
+    base: 'https://images.unsplash.com/photo-1608962714026-af9a76187520?auto=format&fit=crop&w=1280&q=80',
+    reveal: 'https://images.unsplash.com/photo-1504333631130-c833fa1881af?auto=format&fit=crop&w=1280&q=80',
+    labelEn: 'Thermal Tomography',
+    labelMn: 'Дулааны томографи'
+  },
+  mantle_plumes: {
+    base: 'https://images.unsplash.com/photo-1541185933-ef5d8ed016c2?auto=format&fit=crop&w=1280&q=80',
+    reveal: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=1280&q=80',
+    labelEn: 'Mantle Plumes & Convection',
+    labelMn: 'Мантийн урсгал, конвекц'
+  },
+  archaean: {
+    base: 'https://images.unsplash.com/photo-1578301978693-85fa9c0320b9?auto=format&fit=crop&w=1280&q=80',
+    reveal: 'https://images.unsplash.com/photo-1605721911519-3dfeb3be25e7?auto=format&fit=crop&w=1280&q=80',
+    labelEn: 'Archaean Paleocrust',
+    labelMn: 'Архейн эртний царцдас'
+  },
+  subduction: {
+    base: 'https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?auto=format&fit=crop&w=1280&q=80',
+    reveal: 'https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?auto=format&fit=crop&w=1280&q=80',
+    labelEn: 'Active Subduction Zone',
+    labelMn: 'Идэвхтэй субдукцын бүс'
+  },
+  metallogenic: {
+    base: 'https://images.unsplash.com/photo-1610024037657-abf17b700130?auto=format&fit=crop&w=1280&q=80',
+    reveal: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=1280&q=80',
+    labelEn: 'Metallogenic Ore Deposits',
+    labelMn: 'Металлоген эрдсийн хуримтлал'
+  },
+  fault_stresses: {
+    base: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=1280&q=80',
+    reveal: 'https://images.unsplash.com/photo-1544377193-33dcf4d68fb5?auto=format&fit=crop&w=1280&q=80',
+    labelEn: 'Lithospheric Fault Stresses',
+    labelMn: 'Литосферийн хагарлын хүчдэл'
+  },
+  xenolith: {
+    base: 'https://images.unsplash.com/photo-1569003339405-ea396a5a8a90?auto=format&fit=crop&w=1280&q=80',
+    reveal: 'https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?auto=format&fit=crop&w=1280&q=80',
+    labelEn: 'Xenolith Mineral Inclusions',
+    labelMn: 'Ксенолит чулуулгийн агууламж'
+  },
+  cryosphere: {
+    base: 'https://images.unsplash.com/photo-1482862549707-f63cb32c5fd9?auto=format&fit=crop&w=1280&q=80',
+    reveal: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=1280&q=80',
+    labelEn: 'Glacial Cryosphere Interaction',
+    labelMn: 'Мөсөн бүрхүүлийн харилцан үйлчлэл'
   }
 };
 
@@ -118,42 +252,11 @@ const rightStrata = [
   { id: 'mantle', labelEn: 'Peridotite Base', labelMn: 'Перидотитын Суурь', height: 64, depthRange: [50, 120] }
 ];
 
-const earthTones = [
-  { // Crust (clay/sand)
-    start: 'rgba(212, 163, 115, 0.22)',
-    mid: 'rgba(163, 115, 64, 0.35)',
-    end: 'rgba(235, 189, 142, 0.22)',
-    border: '#d4a373',
-    glow: 'rgba(212, 163, 115, 0.45)',
-    glowPulse: 'rgba(212, 163, 115, 0.75)'
-  },
-  { // Basalt (slate/terracotta)
-    start: 'rgba(176, 125, 98, 0.22)',
-    mid: 'rgba(125, 76, 50, 0.35)',
-    end: 'rgba(201, 149, 122, 0.22)',
-    border: '#b07d62',
-    glow: 'rgba(176, 125, 98, 0.45)',
-    glowPulse: 'rgba(176, 125, 98, 0.75)'
-  },
-  { // Metamorphic (granite/quartz/copper)
-    start: 'rgba(156, 102, 68, 0.22)',
-    mid: 'rgba(102, 58, 30, 0.35)',
-    end: 'rgba(184, 128, 92, 0.22)',
-    border: '#9c6644',
-    glow: 'rgba(156, 102, 68, 0.45)',
-    glowPulse: 'rgba(156, 102, 68, 0.75)'
-  },
-  { // Mantle (peridotite/magma)
-    start: 'rgba(232, 112, 42, 0.22)',
-    mid: 'rgba(150, 50, 10, 0.35)',
-    end: 'rgba(255, 136, 61, 0.22)',
-    border: '#e8702a',
-    glow: 'rgba(232, 112, 42, 0.45)',
-    glowPulse: 'rgba(232, 112, 42, 0.75)'
-  }
-];
-
 export function MainHero() {
+  const [activePaletteId, setActivePaletteId] = useState('sedimentary');
+  const activePalette = LITHOSPHERE_PALETTES.find((p) => p.id === activePaletteId) || LITHOSPHERE_PALETTES[0];
+  const earthTones = activePalette.layers;
+
   const mouse = useRef({ x: -999, y: -999 });
   const smooth = useRef({ x: -999, y: -999 });
   const [cursorPos, setCursorPos] = useState({ x: -999, y: -999 });
@@ -200,9 +303,17 @@ export function MainHero() {
   const [isQuizOpen, setIsQuizOpen] = useState(false);
   const [isPaintOpen, setIsPaintOpen] = useState(false);
 
+  // Physical Magnifying Lens States
+  const [isMagnifierActive, setIsMagnifierActive] = useState(false);
+  const [magnifierScale, setMagnifierScale] = useState(2);
+  const [magnifierSize, setMagnifierSize] = useState(190);
+
   // New States for Custom Viewing Modes, Legend, and Fact of the Day
   const [showLegend, setShowLegend] = useState(true);
-  const [viewingMode, setViewingMode] = useState<'default' | 'seismic' | 'oceanic'>('default');
+  const [showFloatingLabels, setShowFloatingLabels] = useState(true);
+  const [isEduPanelOpen, setIsEduPanelOpen] = useState(false);
+  const [clickedFeature, setClickedFeature] = useState<{ name: string; desc: string } | null>(null);
+  const [viewingMode, setViewingMode] = useState<string>('default');
   const [activeCategoryFilter, setActiveCategoryFilter] = useState<'all' | 'geology' | 'human' | 'space' | 'deepsea' | 'ocean' | 'bookmarks'>('all');
   const [visibleCount, setVisibleCount] = useState(12);
   const [factOfDay, setFactOfDay] = useState<{ topic: string; fact: string; explanation: string } | null>(null);
@@ -439,6 +550,11 @@ export function MainHero() {
   const activeIndex = currentStratumIndex !== -1 ? currentStratumIndex : 3;
   const tone = earthTones[activeIndex];
 
+  const activeStratumId = currentStratumIndex !== -1 ? rightStrata[currentStratumIndex].id : 'mantle';
+  const activeFeatureGroup = GEOLOGICAL_FEATURES.find(g => g.layer === activeStratumId) || GEOLOGICAL_FEATURES[0];
+  const featureIdx = isCursorActive ? Math.abs(Math.floor(cursorPos.x / 180)) % 5 : 0;
+  const currentGeologicalFeature = activeFeatureGroup[currentLang === 'en' ? 'featuresEn' : 'featuresMn'][featureIdx];
+
   const parallaxX1 = isCursorActive ? (cursorPos.x / windowSize.width - 0.5) * -15 : 0;
   const parallaxY1 = isCursorActive ? (cursorPos.y / windowSize.height - 0.5) * -15 : 0;
   const tiltX1 = isCursorActive ? (cursorPos.y / windowSize.height - 0.5) * 6 : 0;
@@ -515,12 +631,22 @@ export function MainHero() {
         setSpotlightStyle={setSpotlightStyle}
         showLegend={showLegend}
         setShowLegend={setShowLegend}
+        showFloatingLabels={showFloatingLabels}
+        setShowFloatingLabels={setShowFloatingLabels}
         viewingMode={viewingMode}
         setViewingMode={setViewingMode}
         cursorColor={cursorColor}
         setCursorColor={setCursorColor}
         cursorShape={cursorShape}
         setCursorShape={setCursorShape}
+        isMagnifierActive={isMagnifierActive}
+        setIsMagnifierActive={setIsMagnifierActive}
+        magnifierScale={magnifierScale}
+        setMagnifierScale={setMagnifierScale}
+        magnifierSize={magnifierSize}
+        setMagnifierSize={setMagnifierSize}
+        activePaletteId={activePaletteId}
+        setActivePaletteId={setActivePaletteId}
       />
 
       {/* Geological Live Telemetry & Date/Time HUD Clock */}
@@ -691,7 +817,14 @@ export function MainHero() {
               <div
                 key={stratum.id}
                 style={{ height: `${stratum.height}px` }}
-                className="w-full flex items-center justify-between px-2 text-right transition-colors duration-300"
+                className="w-full flex items-center justify-between px-2 text-right transition-colors duration-300 cursor-pointer hover:bg-white/5 rounded-lg"
+                title={currentLang === 'en' ? 'Click to inspect stratum education' : 'Давхаргыг шинжлэх'}
+                onClick={() => {
+                  const featureGrp = GEOLOGICAL_FEATURES.find(g => g.layer === stratum.id) || GEOLOGICAL_FEATURES[0];
+                  const feat = featureGrp[currentLang === 'en' ? 'featuresEn' : 'featuresMn'][0];
+                  setClickedFeature({ name: feat.name, desc: feat.desc });
+                  setIsEduPanelOpen(true);
+                }}
               >
                 {/* Active/Hover state text indicator */}
                 <div className="flex flex-col items-end">
@@ -735,21 +868,14 @@ export function MainHero() {
             transform: `perspective(1000px) rotateX(${tiltX1}deg) rotateY(${tiltY1}deg) translate(${parallaxX1}px, ${parallaxY1}px) scale(1.05)`,
           }}
         >
-          <div
-            id="hero-base-image-default"
-            className="absolute inset-0 bg-center bg-cover bg-no-repeat hero-zoom transition-opacity duration-1000 ease-in-out"
-            style={{ backgroundImage: `url(${modesConfig.default.base})`, opacity: viewingMode === 'default' ? 1 : 0 }}
-          />
-          <div
-            id="hero-base-image-seismic"
-            className="absolute inset-0 bg-center bg-cover bg-no-repeat hero-zoom transition-opacity duration-1000 ease-in-out"
-            style={{ backgroundImage: `url(${modesConfig.seismic.base})`, opacity: viewingMode === 'seismic' ? 1 : 0 }}
-          />
-          <div
-            id="hero-base-image-oceanic"
-            className="absolute inset-0 bg-center bg-cover bg-no-repeat hero-zoom transition-opacity duration-1000 ease-in-out"
-            style={{ backgroundImage: `url(${modesConfig.oceanic.base})`, opacity: viewingMode === 'oceanic' ? 1 : 0 }}
-          />
+          {Object.entries(modesConfig).map(([key, config]) => (
+            <div
+              key={key}
+              id={`hero-base-image-${key}`}
+              className="absolute inset-0 bg-center bg-cover bg-no-repeat hero-zoom transition-opacity duration-1000 ease-in-out"
+              style={{ backgroundImage: `url(${config.base})`, opacity: viewingMode === key ? 1 : 0 }}
+            />
+          ))}
         </div>
 
         {/* Transition Overlay (adds a gorgeous vignette & depth over base layer) */}
@@ -764,45 +890,25 @@ export function MainHero() {
         </div>
 
         {/* Reveal Layers (z-30) - Overlaid and faded smoothly */}
-        <div className="absolute inset-0 z-30 transition-opacity duration-1000 pointer-events-none" style={{ opacity: viewingMode === 'default' ? 1 : 0 }}>
-          <RevealLayer
-            image={modesConfig.default.reveal}
-            cursorX={cursorPos.x}
-            cursorY={cursorPos.y}
-            spotlightRadius={SPOTLIGHT_R}
-            parallaxX={parallaxX2}
-            parallaxY={parallaxY2}
-            tiltX={tiltX2}
-            tiltY={tiltY2}
-            spotlightStyle={spotlightStyle}
-          />
-        </div>
-        <div className="absolute inset-0 z-30 transition-opacity duration-1000 pointer-events-none" style={{ opacity: viewingMode === 'seismic' ? 1 : 0 }}>
-          <RevealLayer
-            image={modesConfig.seismic.reveal}
-            cursorX={cursorPos.x}
-            cursorY={cursorPos.y}
-            spotlightRadius={SPOTLIGHT_R}
-            parallaxX={parallaxX2}
-            parallaxY={parallaxY2}
-            tiltX={tiltX2}
-            tiltY={tiltY2}
-            spotlightStyle={spotlightStyle}
-          />
-        </div>
-        <div className="absolute inset-0 z-30 transition-opacity duration-1000 pointer-events-none" style={{ opacity: viewingMode === 'oceanic' ? 1 : 0 }}>
-          <RevealLayer
-            image={modesConfig.oceanic.reveal}
-            cursorX={cursorPos.x}
-            cursorY={cursorPos.y}
-            spotlightRadius={SPOTLIGHT_R}
-            parallaxX={parallaxX2}
-            parallaxY={parallaxY2}
-            tiltX={tiltX2}
-            tiltY={tiltY2}
-            spotlightStyle={spotlightStyle}
-          />
-        </div>
+        {Object.entries(modesConfig).map(([key, config]) => (
+          <div
+            key={key}
+            className="absolute inset-0 z-30 transition-opacity duration-1000 pointer-events-none"
+            style={{ opacity: viewingMode === key ? 1 : 0 }}
+          >
+            <RevealLayer
+              image={config.reveal}
+              cursorX={cursorPos.x}
+              cursorY={cursorPos.y}
+              spotlightRadius={SPOTLIGHT_R}
+              parallaxX={parallaxX2}
+              parallaxY={parallaxY2}
+              tiltX={tiltX2}
+              tiltY={tiltY2}
+              spotlightStyle={spotlightStyle}
+            />
+          </div>
+        ))}
 
         {/* Outer vignette to restrict the mask glow boundaries neatly */}
         <div className="absolute inset-0 pointer-events-none z-40 bg-radial-[circle_at_center,transparent_40%,rgba(0,0,0,0.4)_100%]" />
@@ -953,6 +1059,79 @@ export function MainHero() {
             <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
           </button>
         </div>
+
+        {/* Toggleable physical magnifying lens effect */}
+        <MagnifyingLens
+          isActive={isMagnifierActive}
+          cursorX={cursorPos.x}
+          cursorY={cursorPos.y}
+          zoom={magnifierScale}
+          size={magnifierSize}
+          image={modesConfig[viewingMode].reveal}
+          windowSize={windowSize}
+          currentLang={currentLang}
+        />
+
+        {/* Dynamic Floating Labels under the cursor identifying specific mineral or tectonic features */}
+        {showFloatingLabels && isCursorActive && !isIdolOpen && !isGameOpen && !isTypashiOpen && !isQuizOpen && !isPaintOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="fixed z-45 pointer-events-auto cursor-pointer select-none bg-black/85 backdrop-blur-md border border-white/10 rounded-xl p-3 shadow-xl max-w-[240px] flex flex-col gap-1 text-[11px] hover:border-orange-500/40 hover:bg-black/90 active:scale-[0.98] transition-all duration-200"
+            onClick={() => {
+              if (currentGeologicalFeature) {
+                setClickedFeature({
+                  name: currentGeologicalFeature.name,
+                  desc: currentGeologicalFeature.desc
+                });
+                setIsEduPanelOpen(true);
+              }
+            }}
+            style={{
+              left: cursorPos.x + 240 > windowSize.width ? cursorPos.x - 250 : cursorPos.x + 20,
+              top: cursorPos.y + 140 > windowSize.height ? cursorPos.y - 150 : cursorPos.y + 20,
+            }}
+          >
+            {/* Strata color indicator bar */}
+            <div className="flex items-center gap-1.5 mb-1">
+              <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: tone?.border || '#e8702a' }} />
+              <span className="text-[9px] font-mono font-bold uppercase tracking-wider text-orange-400">
+                {currentLang === 'en' ? 'Core Detected' : 'Илрүүлэлт'}
+              </span>
+              <span className="text-[8px] font-mono text-zinc-500 ml-auto font-bold bg-white/5 px-1 rounded">
+                {currentDepth} km
+              </span>
+            </div>
+
+            {/* Feature Name */}
+            <h4 className="text-white font-bold text-xs tracking-tight">
+              {currentGeologicalFeature?.name}
+            </h4>
+
+            {/* Feature Description */}
+            <p className="text-zinc-300 text-[10px] leading-relaxed">
+              {currentGeologicalFeature?.desc}
+            </p>
+
+            {/* Layer Reference */}
+            <div className="mt-1.5 pt-1.5 border-t border-white/5 flex items-center justify-between text-[8px] font-mono text-zinc-500">
+              <span>{currentLang === 'en' ? 'FORMATION:' : 'ҮҮСЭЛ:'}</span>
+              <span className="text-zinc-400 uppercase font-bold">
+                {currentLang === 'en'
+                  ? rightStrata[activeIndex].labelEn
+                  : rightStrata[activeIndex].labelMn}
+              </span>
+            </div>
+
+            {/* Click to learn more CTA */}
+            <div className="mt-2 text-center text-[8.5px] text-orange-400 font-semibold uppercase tracking-wider animate-pulse border-t border-white/10 pt-1.5 flex items-center justify-center gap-1">
+              <BookOpen className="w-2.5 h-2.5" />
+              <span>{currentLang === 'en' ? 'Click to learn more' : 'Дэлгэрэнгүй унших'}</span>
+            </div>
+          </motion.div>
+        )}
 
         {/* Scroll down indicator */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-white/40 text-[9px] font-mono tracking-widest z-50 pointer-events-none select-none">
@@ -1748,6 +1927,15 @@ export function MainHero() {
       <Typashi isOpen={isTypashiOpen} onClose={() => setIsTypashiOpen(false)} userProfile={userProfile} />
       <GeologyQuiz isOpen={isQuizOpen} onClose={() => setIsQuizOpen(false)} currentLang={currentLang} />
       <PaintModal isOpen={isPaintOpen} onClose={() => setIsPaintOpen(false)} currentLang={currentLang} />
+      <EducationPanel
+        isOpen={isEduPanelOpen}
+        onClose={() => setIsEduPanelOpen(false)}
+        viewingMode={viewingMode}
+        currentLang={currentLang}
+        clickedFeature={clickedFeature}
+        activeStratumLabel={currentLang === 'en' ? rightStrata[activeIndex]?.labelEn : rightStrata[activeIndex]?.labelMn}
+        currentDepth={currentDepth}
+      />
       <MessengerPopup />
     </div>
   );
