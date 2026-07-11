@@ -586,6 +586,16 @@ export function MainHero() {
       }}
       id="lithos-app-root"
     >
+      {/* Seismic Shake Screen Pulse Overlay */}
+      <div
+        className="fixed inset-0 pointer-events-none z-[999] transition-all duration-100 ease-out"
+        style={{
+          opacity: shakeAmt > 0.15 ? Math.min(0.75, shakeAmt * 0.08) : 0,
+          background: 'radial-gradient(circle, rgba(239, 68, 68, 0.15) 0%, rgba(232, 112, 42, 0.35) 70%, rgba(220, 38, 38, 0.55) 100%)',
+          boxShadow: `inset 0 0 ${shakeAmt * 20}px rgba(239, 68, 68, ${Math.min(0.9, shakeAmt * 0.1)})`,
+        }}
+      />
+
       {/* Dynamic Glowing Cursor Trail */}
       <CursorTrail
         cursorX={cursorPos.x}
